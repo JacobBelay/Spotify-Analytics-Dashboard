@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"; // Import useState, and effectState;
 import { api, BACKEND_DOWN } from "./api";
-import type { Artist } from "./types";
-import ConnectForm from "./components/ConnectForm";
-import Onboarding from "./components/Onboarding";
-import Dashboard from "./components/Dashboard";
+import type { Artist } from "./types";// Imports Artist Interface From types.ts
+import ConnectForm from "./components/ConnectForm"; // Function Imported From ConnectForm.tsx
+import Onboarding from "./components/Onboarding"; // Function Imported From Onboarding.tsx
+import Dashboard from "./components/Dashboard"; // Function Imported From Dashboard.tsx
 
 type View = "connect" | "onboarding" | "dashboard";
 
