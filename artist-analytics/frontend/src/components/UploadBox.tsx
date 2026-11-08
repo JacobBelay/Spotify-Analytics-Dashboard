@@ -90,7 +90,7 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
         <input ref={input} type="file" accept=".csv,text/csv" hidden onChange={(e) => e.target.files?.[0] && inspect(e.target.files[0])} />
       </div>
 
-      {busy && <p className="muted small">Reading…</p>}
+      {busy && <p className="loading">Reading file</p>}
 
       {preview && (
         <div className="preview">
@@ -100,12 +100,12 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
             // <>…</> is a Fragment: it groups siblings without adding a
             // wrapper <div> to the page, which would disturb the layout.
             <>
-              <h3>
+              <p className="subhead">
                 Found a {preview.file_type} export
                 {preview.file_type === "timeline" && preview.days ? ` · ${preview.days.toLocaleString()} days` : ""}
                 {preview.songs ? ` · ${preview.songs} songs` : ""}
                 {preview.playlists ? ` · ${preview.playlists} playlists` : ""}
-              </h3>
+              </p>
               {preview.first_day && (
                 <p className="small">
                   {preview.first_day} → {preview.last_day} · {preview.metrics?.map(metricLabel).join(", ")}

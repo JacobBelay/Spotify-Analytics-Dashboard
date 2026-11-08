@@ -72,7 +72,12 @@ export default function InsightsPanel({ artistId }: { artistId: number }) {
         ))}
       </div>
       {error && <p className="err small">{error}</p>}
-      {items.length === 0 && <p className="muted small" style={{ marginTop: 12 }}>No reports yet. Generate one to get Claude's read on your trends.</p>}
+      {items.length === 0 && (
+        <div className="empty" style={{ padding: "26px 10px" }}>
+          <p className="title">No reports yet.</p>
+          <p className="small">Generate one to get Claude's read on your trends.</p>
+        </div>
+      )}
       {/* Real database ids, so these keys are stable even as the list grows. */}
       {items.map((i) => (
         <div key={i.id} className="insight">

@@ -29,21 +29,21 @@ export default function Onboarding({ artist, onDone }: { artist: Artist; onDone:
   }, [artist.id]);
 
   if (error) return <p className="err">{error}</p>;
-  if (!data) return <p className="muted">Loading…</p>;
+  if (!data) return <p className="loading">Loading</p>;
 
   return (
     <div className="grid">
-      <div className="card">
-        <div className="row">
-          {artist.image_url && <img src={artist.image_url} alt="" width={48} height={48} style={{ borderRadius: 8 }} />}
-          <div>
-            <h2 style={{ margin: 0 }}>Get {artist.name}'s data in</h2>
-            <p className="muted small" style={{ margin: 0 }}>
-              Spotify and Apple don't let apps pull your artist stats directly, so you export them from their artist sites and
-              drop them here. The first upload brings in your full history; after that, a quick weekly upload keeps things
-              current.
-            </p>
-          </div>
+      {/* This screen's one serif line, with the artist photo beside it. */}
+      <div className="page-head row" style={{ alignItems: "flex-start", gap: 16, flexWrap: "nowrap" }}>
+        {artist.image_url && <img src={artist.image_url} alt="" width={56} height={56} style={{ borderRadius: 12, flex: "none" }} />}
+        <div>
+          <p className="eyebrow">Data sources</p>
+          <h2 className="title">Get <em>{artist.name}</em>'s data in.</h2>
+          <p className="lede small">
+            Spotify and Apple don't let apps pull your artist stats directly, so you export them from their artist sites and
+            drop them here. The first upload brings in your full history; after that, a quick weekly upload keeps things
+            current.
+          </p>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ function StepBody({ step, artistId, onChange }: { step: OnboardingStep; artistId
   if (step.id === "profile") {
     return (
       <div>
-        <h3>{step.title}</h3>
+        <p className="eyebrow">{step.title}</p>
         <p className="muted small">Done. Your releases are on the timeline.</p>
       </div>
     );
@@ -90,7 +90,7 @@ function StepBody({ step, artistId, onChange }: { step: OnboardingStep; artistId
   if (step.id === "youtube") {
     return (
       <div>
-        <h3>{step.title}</h3>
+        <p className="eyebrow">{step.title}</p>
         {step.done ? (
           <p className="small">Connected as <strong>{step.account_name}</strong>. Daily views, watch time and subscribers update automatically. {status}</p>
         ) : step.available ? (
@@ -113,7 +113,7 @@ function StepBody({ step, artistId, onChange }: { step: OnboardingStep; artistId
   return (
     <div>
       <div className="row">
-        <h3 style={{ margin: 0 }}>{step.title}</h3>
+        <p className="eyebrow" style={{ margin: 0 }}>{step.title}</p>
         {status}
       </div>
       <div className="row" style={{ margin: "8px 0" }}>

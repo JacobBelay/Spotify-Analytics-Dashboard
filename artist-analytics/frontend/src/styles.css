@@ -286,6 +286,71 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .stat .n { font-family: var(--font-display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
 .stat .k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-top: 5px; }
 
+/* --- Per-screen header ---
+   Every screen gets ONE serif line, the same way the landing page does: a
+   micro-label above, the title in the display face, an optional lede below.
+   `.title` is the smaller sibling of the hero's h1 — same face, less weight
+   on the page, so the hero stays the loudest thing in the app. */
+.page-head { margin-bottom: 24px; }
+.title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(23px, 3.3vw, 33px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.title em { font-style: italic; color: var(--accent-strong); }
+.page-head .lede { color: var(--text-2); max-width: 560px; margin: 10px 0 0; }
+
+/* A quieter label for subsections INSIDE a panel. Same caps-and-tracking
+   treatment as .eyebrow but with no dot, so the panel's own label stays the
+   most important thing in the card. */
+.subhead {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 20px 0 8px;
+}
+.subhead:first-of-type { margin-top: 6px; }
+
+/* --- Loading ---
+   A pulsing dot rather than the word "Loading…". The `@keyframes` block names
+   an animation and lists what changes at each point through it; the
+   prefers-reduced-motion rule near the top of this file switches it off. */
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+.loading::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 1.3s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.75); }
+  50%      { opacity: 1;   transform: scale(1.15); }
+}
+
+/* --- Empty state ---
+   Centred, with one serif line so a screen with no data still looks like it
+   belongs to the same app. */
+.empty { text-align: center; padding: 34px 18px; }
+/* `.empty p` below would otherwise grey this out too, since the title is a
+   <p>. Give it its own color so the serif line keeps some presence. */
+.empty .title { font-size: 22px; margin-bottom: 8px; color: var(--text-2); }
+.empty p { color: var(--muted); margin: 0 auto 16px; max-width: 420px; }
+
 .grid { display: grid; gap: 16px; }
 /* minmax(0, 3fr) rather than 3fr lets the column shrink below its content
    width, so wide charts can't blow the layout out sideways. */

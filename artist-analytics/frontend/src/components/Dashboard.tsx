@@ -74,13 +74,15 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
   // hook calls — hooks must run in the same order on every render, so they
   // can never sit below a conditional return.
   if (error) return <p className="err">{error}</p>;
-  if (!summary) return <p className="muted">Loading…</p>;
+  if (!summary) return <p className="loading">Loading</p>;
 
   if (!avail.length) {
     return (
-      <div className="card">
-        <h2>No data yet for {artist.name}</h2>
-        <p className="muted">Upload a Spotify for Artists export or connect YouTube to get started.</p>
+      <div className="card empty">
+        {/* Even a blank screen carries one serif line, so it still reads as
+            part of the same app rather than an error page. */}
+        <p className="title">Nothing to show for <em>{artist.name}</em> yet.</p>
+        <p>Upload a Spotify for Artists export or connect YouTube to get started.</p>
         <button className="btn" onClick={onOpenSources}>Add data</button>
       </div>
     );
@@ -92,6 +94,13 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
 
   return (
     <div className="grid">
+      {/* One serif line per screen. Here it is the artist, so you always know
+          whose numbers you are looking at. */}
+      <div className="page-head">
+        <p className="eyebrow">Dashboard</p>
+        <h2 className="title">{artist.name}</h2>
+      </div>
+
       {onb?.reminders.map((r) => (
         <div key={r.platform} className="banner" role="status">
           <span aria-hidden>⚠</span>
@@ -131,7 +140,7 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
             ))}
           </div>
         </div>
-        {series ? <TrendChart series={series} /> : <p className="muted">Loading chart…</p>}
+        {series ? <TrendChart series={series} /> : <p className="loading">Loading chart</p>}
         {/* Every panel carries one of these micro-labels, which is what makes
             the separate cards read as a single system. */}
       </div>
@@ -143,7 +152,7 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
             <p className="eyebrow">Signals</p>
             {leadLag.length > 0 && (
               <>
-                <h3>Which platform moves first</h3>
+                <p className="subhead">Which platform moves first</p>
                 <ul className="small">
                   {leadLag.map((l) => (
                     <li key={l.reading}>{l.reading} <span className="muted">(correlation {l.correlation.toFixed(2)})</span></li>
@@ -151,7 +160,7 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
                 </ul>
               </>
             )}
-            <h3>Recent spikes and dips</h3>
+            <p className="subhead">Recent spikes and dips</p>
             {spikes.length === 0 ? (
               <p className="muted small">Nothing unusual in the last 4 months.</p>
             ) : (

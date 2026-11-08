@@ -154,7 +154,7 @@ export default function App() {
       {/* Chained ternaries (`cond ? a : b`) pick one of several screens.
           Used instead of `&&` because here we need "this OR that". */}
       {loading ? (
-        <p className="muted">Loading…</p>
+        <p className="loading">Loading</p>
       ) : view === "connect" || !artist ? (
         // Values passed into a component are "props" — like HTML attributes,
         // but they can be any JavaScript value, functions included. Passing a

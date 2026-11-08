@@ -117,8 +117,28 @@ Each file's header comment teaches the idea it best demonstrates:
 | `.btn` / `.btn.secondary` | glowing blue pill / quiet outline |
 | `.btn-orb` | the circular ringed CTA |
 | `.wordmark` | the corner logotype with its glowing dot |
-| `.hero` / `.hero-row` / `.rail` / `.stat` | the headline block and its stat rails |
+| `.hero` / `.hero-row` / `.rail` / `.stat` | the landing headline block and its stat rails |
+| `.page-head` + `.title` | a screen's own serif headline, smaller than the hero |
+| `.subhead` | a subsection label inside a panel — caps, no dot |
+| `.loading` | the pulsing dot, in place of the word "Loading…" |
+| `.empty` | centred empty state with one serif line |
 | `.display` + `<em>` | serif headline treatment anywhere, with one italic word |
+
+## Applying the style to a new screen
+
+Four steps, in order:
+
+1. **One serif line.** Wrap a `.page-head` with an `.eyebrow` above a
+   `<h2 className="title">`. At most one `<em>` in it. The landing hero's
+   `h1` stays the loudest thing in the app, so screens use `.title`.
+2. **Label every panel** with an `.eyebrow`, never a plain `<h2>`. Subsections
+   inside a panel use `.subhead` so the panel's own label stays dominant.
+3. **Wrap content in `.card`**, which is translucent so the aurora reads
+   through it.
+4. **Give loading and empty their own treatment** — `.loading` and `.empty`,
+   not bare grey text. A screen with no data should still look like this app.
+
+Colors come from the tokens; don't introduce a hex value outside `:root`.
 
 ## Accessibility rules this theme follows
 
