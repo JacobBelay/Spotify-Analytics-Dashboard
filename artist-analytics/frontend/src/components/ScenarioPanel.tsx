@@ -54,7 +54,7 @@ export default function ScenarioPanel({ artistId, platform, metric }: { artistId
   const color = `var(--${platform})`;
   return (
     <div className="card">
-      <h2>What if…</h2>
+      <p className="eyebrow">What if…</p>
       <p className="muted small">
         Plan upcoming circumstances and see how they'd change {PLATFORM_LABEL[platform]} {metricLabel(metric).toLowerCase()} over the next {horizon} days.
         Effect sizes come from this artist's own past releases and playlist adds when there's enough history.

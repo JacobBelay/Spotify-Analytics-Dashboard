@@ -95,7 +95,10 @@ export default function App() {
     // These strings are the selectors defined in styles.css.
     <div className="app">
       <header className="topbar">
-        <h1>Artist Analytics</h1>
+        {/* The wordmark is deliberately NOT the serif headline. Small, caps,
+            letterspaced, with a glowing dot — it anchors the corner so the
+            one big serif line on the page keeps all the weight. */}
+        <span className="wordmark">Artist Analytics</span>
         {/* The flexbox spacer: pushes everything after it to the right. */}
         <span className="spacer" />
 

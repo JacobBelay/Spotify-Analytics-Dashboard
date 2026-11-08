@@ -3,50 +3,80 @@
 A short orientation for anyone new to CSS or React working on this app. The
 code itself is commented in detail — this file is the map.
 
-## The palette: midnight black + sky blue
+## The design, in four moves
 
-Midnight black carries the layout, sky blue carries meaning. The rule is: if
-something is sky blue, you can click it or you should look at it. Everything
-else stays in the blacks and greys.
+Copy these four and anything you add will fit:
 
-Every color lives in one place — the `:root` block at the top of
-`src/styles.css` — as a CSS custom property. Nothing below that block hard-codes
-a color, so changing the theme means editing those lines and nothing else.
+1. **Midnight black everywhere, lit by one aurora.** A single glow rises from
+   the bottom centre of the viewport — blue, with a hot orange core. It is the
+   only light source on the page.
+2. **Electric blue is the accent; orange is its rare counterweight.** If
+   everything glows, nothing does.
+3. **Serif for display, sans for everything else.** The page headline and the
+   big numbers are serif. That contrast is what makes it look designed rather
+   than assembled.
+4. **Labels are small, uppercase, letterspaced, with a dot in front.** Every
+   panel carries one. It is what makes separate cards read as one system.
+
+## Palette
+
+Three source colors, taken as exact hex values:
+
+| | Hex | Role |
+| --- | --- | --- |
+| Midnight Black | `#02070A` | the page, and text on blue fills |
+| Electric Blue | `#0297DE` | the accent — buttons, links, focus, primary series |
+| Cantaloupe Orange | `#FC734D` | counterweight — second series, warnings |
+
+Measured against midnight black: blue is **6.25:1** and orange is **7.42:1**,
+so both clear WCAG AA for normal text. Midnight-on-blue is also 6.25:1, which
+is why buttons use dark text rather than white (white on blue is only 3.24:1).
+
+Everything else derives from those three and lives in the `:root` block at the
+top of `src/styles.css`. Nothing below that block hard-codes a color.
 
 | Token | Value | Used for |
 | --- | --- | --- |
-| `--bg` | `#05060a` | the page — the deepest black |
-| `--surface` | `#0d1017` | cards |
-| `--surface-2` | `#161b25` | inputs, chips, hover states |
-| `--border` | `#212a38` | hairlines between layers |
-| `--text` | `#e9f1fa` | headings and numbers |
-| `--text-2` | `#a5b4c8` | body copy and labels |
-| `--muted` | `#6d7f97` | captions, axis ticks |
-| `--accent` | `#38bdf8` | **sky blue** — buttons, links, focus |
-| `--accent-strong` | `#7dd3fc` | hover (lighter reads as closer on dark) |
-| `--accent-deep` | `#0284c7` | pressed states, subtle borders |
-| `--accent-soft` | `rgb(56 189 248 / 12%)` | tinted backgrounds |
-| `--on-accent` | `#04121c` | text on a sky-blue button |
-| `--spotify` / `--apple_music` / `--youtube` | sky blue / amber / mint | chart series |
-| `--good` / `--bad` / `--warn-text` | mint / rose / amber | status |
+| `--bg` | `#02070A` | the page |
+| `--surface` / `--surface-2` | `#080E16` / `#0F1822` | cards / inputs and chips |
+| `--border` | `#1A2633` | hairlines between layers |
+| `--text` / `--text-2` / `--muted` | `#EAF2F9` / `#9FB2C4` / `#64788C` | three levels of emphasis |
+| `--accent-strong` / `--accent-deep` | `#41B6EC` / `#026FA6` | hover / pressed |
+| `--accent-soft` | `rgb(2 151 222 / 14%)` | tinted backgrounds |
+| `--on-accent` | `#02070A` | text on a blue fill |
+| `--spotify` / `--apple_music` / `--youtube` | blue / orange / `#3DDC97` | chart series |
+| `--font-display` / `--font-ui` | system serif / Inter | headline and numerals / everything else |
 
-Three conventions worth keeping:
+Two deliberate departures from the source palette, both documented in the CSS:
 
-- **Depth comes from stacking surfaces, not shadows.** On a near-black page a
-  drop shadow is invisible; a slightly lighter panel with a hairline border is
-  what reads as "raised".
-- **Never pure `#fff` on pure black** — it vibrates. The text tokens are
-  blue-tinted off-whites so they belong to the same family as the accent.
-- **Chart colors come from CSS variables, not literals.** React builds the
-  string `var(--spotify)` from the platform name, so retheming the chart means
-  editing the variable.
+- **Mint `#3DDC97` exists for data only.** The reference is a two-accent
+  system, but three platforms need three separable hues on a chart. Mint never
+  appears in UI chrome.
+- **The serif is a system stack**, so the app needs no network at runtime. To
+  swap in a webfont (Instrument Serif, Playfair), load it in `index.html` and
+  change `--font-display` — one line.
 
 ### Changing the theme
 
-Want a different accent? Edit `--accent`, `--accent-strong`, `--accent-deep`,
-`--accent-soft`, `--on-accent` and `--spotify` (the primary series shares the
-accent hue). That is the whole change — the buttons, focus rings, pills, drop
-zone highlight, tooltip border and main chart line all follow.
+Edit `--midnight`, `--blue` and `--ember`. Everything else — buttons, focus
+rings, pills, the drop zone, the tooltip border, the aurora, the chart lines —
+is derived from those three and follows automatically.
+
+## How the aurora works
+
+No markup: it is two pseudo-elements on `<body>`, both `position: fixed` so
+the light stays put while the page scrolls.
+
+- `body::before` — five stacked `radial-gradient`s. An `ellipse at 50% 92%` is
+  centred near the bottom edge so most of it is on screen. Smallest and
+  hottest is the orange core; the blue body sits over it, then two faint
+  washes stop the edge being visible.
+- `body::after` — the rays. `repeating-linear-gradient` makes infinite evenly
+  spaced stripes; `mask-image` fades them out everywhere except inside the
+  glow, and `skewX` fans them.
+
+Cards are translucent with `backdrop-filter`, so the light reads through them
+instead of being blocked.
 
 ## File map
 
@@ -63,21 +93,32 @@ zone highlight, tooltip border and main chart line all follow.
 
 ## React concepts, and where to read each one
 
-Each file's header comment teaches the idea it best demonstrates. Read them in
-this order:
+Each file's header comment teaches the idea it best demonstrates:
 
 1. **`main.tsx`** — how React attaches to a page at all.
 2. **`App.tsx`** — components, `useState`, `useEffect`, props, conditional
    rendering, list keys.
 3. **`components/KpiRow.tsx`** — a pure presentational component: props in,
    JSX out, callback up.
-4. **`components/ConnectForm.tsx`** — controlled form inputs.
+4. **`components/ConnectForm.tsx`** — controlled form inputs, and the hero.
 5. **`components/Dashboard.tsx`** — two effects with different dependency
    arrays, and why splitting them matters.
 6. **`components/UploadBox.tsx`** — `useRef`, and drag-and-drop.
 7. **`components/ScenarioPanel.tsx`** — editing a list in state without
    mutating it.
 8. **`components/TrendChart.tsx`** — describing a chart declaratively.
+
+## Useful classes
+
+| Class | What it gives you |
+| --- | --- |
+| `.card` | translucent panel, hairline border, lit top edge |
+| `.eyebrow` | the dotted micro-label. Add `.ember` for an orange dot |
+| `.btn` / `.btn.secondary` | glowing blue pill / quiet outline |
+| `.btn-orb` | the circular ringed CTA |
+| `.wordmark` | the corner logotype with its glowing dot |
+| `.hero` / `.hero-row` / `.rail` / `.stat` | the headline block and its stat rails |
+| `.display` + `<em>` | serif headline treatment anywhere, with one italic word |
 
 ## Accessibility rules this theme follows
 
@@ -88,6 +129,7 @@ this order:
 - Color is never the only signal: deltas carry ▲/▼, status rows carry words.
 - The three chart hues stay distinguishable for color-blind readers.
 - Animation is disabled under `prefers-reduced-motion`.
+- Numbers use `font-variant-numeric: tabular-nums` so they don't jiggle.
 
 ## Running it
 

@@ -53,14 +53,39 @@ export default function ConnectForm({ onCreated }: { onCreated: (a: Artist) => v
   };
 
   return (
-    // onSubmit on the <form> (rather than onClick on the button) is what makes
-    // pressing Enter in any field work.
-    <form className="card" onSubmit={submit} style={{ maxWidth: 640 }}>
-      <h2>Step 1 · Connect your artist profiles</h2>
-      <p className="muted">
-        Paste the public links to your artist pages. We use them to find your name, photo and release dates, so your
-        dashboard shows your releases on the timeline before you upload anything.
-      </p>
+    <div className="hero">
+      {/* The hero row: a stat rail, the headline, another stat rail. On a
+          phone the CSS collapses this to one column automatically. */}
+      <div className="hero-row">
+        <div className="rail left">
+          <div className="stat"><div className="n">3</div><div className="k">Platforms</div></div>
+          <div className="stat"><div className="n">1</div><div className="k">Dashboard</div></div>
+        </div>
+
+        <div>
+          {/* The one serif line on the page. `<em>` is the single italic
+              word — the whole editorial trick, so never use it twice. */}
+          <h1>Know what your<br />music is <em>really</em> doing.</h1>
+          <p>
+            Spotify, Apple Music and YouTube in one timeline — with forecasts, anomaly detection and plain-English
+            answers about why the numbers moved.
+          </p>
+        </div>
+
+        <div className="rail right">
+          <div className="stat"><div className="n">28d</div><div className="k">Growth window</div></div>
+          <div className="stat"><div className="n">80%</div><div className="k">Forecast range</div></div>
+        </div>
+      </div>
+
+      {/* onSubmit on the <form> (rather than onClick on the button) is what
+          makes pressing Enter in any field work. */}
+      <form className="card" onSubmit={submit} style={{ maxWidth: 560, margin: "40px auto 0", textAlign: "left" }}>
+        <p className="eyebrow">Step 1 · Connect your profiles</p>
+        <p className="muted small" style={{ marginTop: 0 }}>
+          Paste the public links to your artist pages. We use them to find your name, photo and release dates, so your
+          dashboard shows your releases on the timeline before you upload anything.
+        </p>
 
       {/* `.grid` from styles.css stacks these labels with even spacing. */}
       <div className="grid" style={{ marginTop: 12 }}>
@@ -90,11 +115,12 @@ export default function ConnectForm({ onCreated }: { onCreated: (a: Artist) => v
         <div key={p} className="warn">{p}</div>
       ))}
 
-      <div className="row" style={{ marginTop: 14 }}>
-        {/* `disabled` drives the dimmed `.btn:disabled` style in CSS — one
-            state value changes both behaviour and appearance. */}
-        <button className="btn" disabled={busy}>{busy ? "Looking you up…" : "Continue"}</button>
-      </div>
-    </form>
+        <div className="row" style={{ marginTop: 16 }}>
+          {/* `disabled` drives the dimmed `.btn:disabled` style in CSS — one
+              state value changes both behaviour and appearance. */}
+          <button className="btn" disabled={busy}>{busy ? "Looking you up…" : "Continue"}</button>
+        </div>
+      </form>
+    </div>
   );
 }

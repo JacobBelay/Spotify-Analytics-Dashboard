@@ -7,255 +7,417 @@
       `.card { padding: 16px; }` means "every element with class='card' gets
       16px of inner spacing".
 
-   2. We never hard-code a color below this file's top section. Instead we
-      define "custom properties" (also called CSS variables) once, then refer
-      to them with var(). Change --accent in one place and the entire app
-      changes. That is the whole trick behind a theme.
+   2. We never hard-code a color below section 1. Instead we define "custom
+      properties" (CSS variables) once, then refer to them with var(). Change
+      one line and the whole app changes. That is the trick behind a theme.
 
-   3. Theme used here: MIDNIGHT BLACK surfaces + SKY BLUE accent.
-      Blacks carry the layout, sky blue is reserved for things you can click
-      or should look at. If everything glows, nothing does.
+   3. Order matters. Later rules of equal "specificity" win, so this file runs
+      general -> specific: tokens, reset, backdrop, layout, components.
 
-   4. Order matters. Later rules of equal "specificity" win, so this file goes
-      general -> specific: variables, reset, text, layout, components.
+   THE DESIGN, IN FOUR MOVES. Copy these and anything you add will fit:
+     - MIDNIGHT BLACK everywhere, lit by ONE aurora glow at the bottom.
+     - ELECTRIC BLUE is the accent. Orange is its rare counterweight. If
+       everything glows, nothing does.
+     - SERIF for display: the page title and the big numbers. Sans for
+       everything else. That contrast is what makes it look designed.
+     - LABELS ARE SMALL, UPPERCASE AND LETTERSPACED, with a dot in front.
    ========================================================================= */
 
 
 /* ---------------------------------------------------------------------------
    1. DESIGN TOKENS
-   `:root` is the <html> element — the outermost box on the page. Variables
-   declared here are visible to every element, because CSS variables inherit
-   downward. This is our palette; nothing else in the file invents a color.
+   `:root` is the <html> element. Variables declared here are visible to every
+   element, because CSS variables inherit downward.
    ------------------------------------------------------------------------ */
 :root {
-  /* Tells the browser to render its own UI (scrollbars, form controls,
-     autofill) in dark mode so it matches our page instead of flashing white. */
+  /* Render browser UI (scrollbars, form controls) dark to match the page. */
   color-scheme: dark;
 
-  /* --- Midnight black: four steps, darkest to lightest ---
-     Depth comes from stacking slightly lighter surfaces, not from shadows. */
-  --bg: #05060a;        /* the page itself — the deepest black */
-  --surface: #0d1017;   /* cards sitting on the page */
-  --surface-2: #161b25; /* inputs and chips sitting on a card */
-  --border: #212a38;    /* hairlines that separate the layers */
+  /* --- The three source colors --- */
+  --midnight: #02070a;  /* Midnight Black */
+  --blue: #0297de;      /* Electric Blue  */
+  --ember: #fc734d;     /* Cantaloupe Orange */
+
+  /* --- Surfaces: midnight, lifted in four steps ---
+     Each step is barely lighter and slightly blue. On a near-black page,
+     depth comes from stacked surfaces, never from drop shadows — a shadow on
+     black is invisible. */
+  --bg: var(--midnight);
+  --surface: #080e16;   /* cards */
+  --surface-2: #0f1822; /* inputs, chips, hover */
+  --border: #1a2633;    /* hairlines between layers */
 
   /* --- Text: three levels of emphasis ---
-     Never use pure #fff on pure black; it vibrates. These are blue-tinted
-     off-whites so the text feels part of the same family as the accent. */
-  --text: #e9f1fa;      /* headings and numbers */
-  --text-2: #a5b4c8;    /* body copy, labels */
-  --muted: #6d7f97;     /* captions, axis ticks, "not important" */
+     Blue-tinted off-whites, never pure #fff, which vibrates on pure black. */
+  --text: #eaf2f9;
+  --text-2: #9fb2c4;
+  --muted: #64788c;
 
-  /* --- Sky blue: the one accent ---
-     Buttons, links, focus rings, the primary chart line. */
-  --accent: #38bdf8;         /* the sky blue */
-  --accent-strong: #7dd3fc;  /* hover — lighter reads as "closer" on dark */
-  --accent-deep: #0284c7;    /* pressed / borders of filled buttons */
-  /* A translucent wash of the accent. rgb(... / 12%) lets the black show
-     through, so tinted backgrounds stay in the midnight family. */
-  --accent-soft: rgb(56 189 248 / 12%);
-  --on-accent: #04121c;      /* text ON a sky-blue button: dark, not white */
+  /* --- Electric blue, the one accent ---
+     Measured against --bg: #0297de is 6.25:1, so it is safe as text. */
+  --accent: var(--blue);
+  --accent-strong: #41b6ec; /* hover — lighter reads as closer on dark */
+  --accent-deep: #026fa6;   /* pressed, quiet borders */
+  --accent-soft: rgb(2 151 222 / 14%); /* translucent, so black shows through */
+  --on-accent: var(--midnight);        /* text ON blue: midnight, not white */
 
-  /* --- Chart series colors ---
-     Three platforms = three hues that stay distinguishable for color-blind
-     readers (tested as a set): sky blue, amber, mint. */
-  --spotify: #38bdf8;
-  --apple_music: #fbbf24;
-  --youtube: #34d399;
-  --grid: #171e29;      /* chart gridlines: barely there on purpose */
+  /* --- Cantaloupe orange, the counterweight (7.42:1) ---
+     Used for the second data series and for warnings. Nothing else. */
+  --ember-soft: rgb(252 115 77 / 13%);
 
-  /* --- Status colors --- */
-  --good: #34d399;
-  --bad: #fb7185;
-  --warn-text: #fcd34d;
-  --warn-bg: rgb(252 211 77 / 10%);
+  /* --- Chart series ---
+     The reference palette is two accents, but three platforms need three
+     separable hues, so mint joins for data only — never for UI chrome. */
+  --spotify: var(--blue);
+  --apple_music: var(--ember);
+  --youtube: #3ddc97;
+  --grid: #121c26;
 
-  /* --- Shape and type ---
-     Tokens aren't only for color. Reusing one radius everywhere is what
-     makes an interface look designed rather than assembled. */
-  --radius: 12px;
-  --radius-sm: 8px;
-  --ring: 0 0 0 3px rgb(56 189 248 / 35%); /* the focus glow */
+  /* --- Status --- */
+  --good: #3ddc97;
+  --bad: #ff6b81;
+  --warn-text: #fcb04d;
+  --warn-bg: rgb(252 176 77 / 10%);
 
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* --- Type ---
+     The serif is the signature. A system serif stack is used so the app needs
+     no network at runtime; to swap in a webfont (Instrument Serif, Playfair),
+     load it in index.html and change this one line. */
+  --font-display: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+  --font-ui: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* --- Shape --- */
+  --radius: 14px;
+  --radius-sm: 9px;
+  --ring: 0 0 0 3px rgb(2 151 222 / 35%);
+  --glow: 0 0 28px rgb(2 151 222 / 30%);
+
+  font-family: var(--font-ui);
 }
 
 
 /* ---------------------------------------------------------------------------
    2. RESET AND BASE
-   Browsers ship their own default styles. These few rules flatten the
-   defaults we don't want, so our rules start from a predictable place.
    ------------------------------------------------------------------------ */
 
-/* `*` matches every element. border-box means "padding and border count
-   INSIDE the width I set", which is how humans expect boxes to work. */
+/* border-box = "padding and border count INSIDE the width I set", which is
+   how humans expect boxes to work. */
 * { box-sizing: border-box; }
 
 body {
-  margin: 0;                 /* browsers add 8px by default; we don't want it */
+  margin: 0;                 /* browsers add 8px by default */
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
   line-height: 1.45;         /* unitless = 1.45x the font size, so it scales */
   -webkit-font-smoothing: antialiased; /* thinner text on dark backgrounds */
-
-  /* A single sky-blue glow behind the top of the page. `fixed` keeps it put
-     while content scrolls, so it reads as ambient light, not as an element. */
-  background-image: radial-gradient(900px 500px at 50% -15%, rgb(56 189 248 / 7%), transparent 70%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  position: relative;
+  min-height: 100vh;
 }
 
-h1, h2, h3 { margin: 0 0 8px; line-height: 1.2; letter-spacing: -0.01em; }
-h1 { font-size: 22px; }
-h2 { font-size: 17px; }
-h3 { font-size: 14px; color: var(--text-2); }
-
-a { color: var(--accent); text-decoration-color: var(--accent-deep); }
-a:hover { color: var(--accent-strong); }
-
-/* Form elements refuse to inherit font and color unless you ask them to. */
-button, input, select, textarea { font: inherit; color: inherit; }
-
-/* Respect people who have asked their OS to reduce animation. Always pair
-   any transition you add with this block. */
+/* Respect anyone who asked their OS to reduce animation. Pair this with any
+   transition you add. */
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
 
 /* ---------------------------------------------------------------------------
-   3. LAYOUT
+   3. THE AURORA BACKDROP
+   The signature of the design: one light source, low and centred, blue with
+   an orange core, with faint rays fanning up out of it.
+
+   Built from pseudo-elements on <body> so no markup is needed. `::before` and
+   `::after` are boxes the browser invents for an element — they need
+   `content` to exist at all, and `position: fixed` pins them to the viewport
+   so the light stays put while the page scrolls behind it.
+   ------------------------------------------------------------------------ */
+
+/* Layer 1: the glow itself — three stacked radial gradients.
+   An "ellipse at 50% 100%" is centred on the bottom edge, so only its top
+   half shows: light rising from below the fold. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;                 /* shorthand for top/right/bottom/left: 0 */
+  pointer-events: none;     /* clicks pass straight through */
+  z-index: 0;
+  background:
+    /* The warm core: small, low, and the hottest point of the light. */
+    radial-gradient(ellipse 32% 25% at 50% 90%, rgb(252 115 77 / 78%), transparent 70%),
+    /* A bright lip on the horizon line itself. */
+    radial-gradient(ellipse 18% 7% at 50% 92%, rgb(255 215 185 / 72%), transparent 72%),
+    /* The blue body. Centred above the bottom edge so most of the ellipse is
+       on screen — that is what makes the light fill the lower half rather
+       than hug the very bottom. */
+    radial-gradient(ellipse 58% 50% at 50% 92%, rgb(2 151 222 / 80%), transparent 70%),
+    /* A taller, fainter wash that reaches up behind the headline. */
+    radial-gradient(ellipse 85% 68% at 50% 98%, rgb(2 151 222 / 42%), transparent 72%),
+    /* The outermost halo, to stop any hard edge. */
+    radial-gradient(ellipse 135% 92% at 50% 106%, rgb(2 151 222 / 20%), transparent 72%);
+}
+
+/* Layer 2: the rays.
+   `repeating-linear-gradient` makes infinite evenly spaced stripes. On their
+   own they'd cover the screen, so `mask-image` fades them out: a mask makes
+   the element visible where the mask is opaque and transparent where it is
+   not, which confines the stripes to the glow. `skewX` fans them slightly. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: auto 0 0 0;
+  height: 88vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+  background: repeating-linear-gradient(
+    94deg,
+    transparent 0 24px,
+    rgb(215 240 255 / 22%) 24px 26px
+  );
+  transform: skewX(-6deg) scaleX(1.3);
+  mask-image: radial-gradient(ellipse 42% 80% at 50% 96%, #000 5%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 42% 80% at 50% 96%, #000 5%, transparent 70%);
+}
+
+
+/* ---------------------------------------------------------------------------
+   4. TYPE
+   ------------------------------------------------------------------------ */
+
+h1, h2, h3 { margin: 0 0 8px; line-height: 1.15; }
+
+/* The display headline. Serif, large, tight — the editorial note that keeps
+   the page from looking like every other dark dashboard. */
+h1, .display {
+  font-family: var(--font-display);
+  font-weight: 400;              /* serifs look heavy; don't bold them */
+  font-size: clamp(30px, 5vw, 52px);
+  letter-spacing: -0.015em;
+}
+/* One italic word in the headline is the whole trick. Use it once. */
+h1 em, .display em { font-style: italic; color: var(--accent-strong); }
+
+h2 { font-size: 17px; font-family: var(--font-ui); }
+h3 { font-size: 14px; font-family: var(--font-ui); color: var(--text-2); }
+
+a { color: var(--accent); text-decoration-color: var(--accent-deep); }
+a:hover { color: var(--accent-strong); }
+
+/* Form elements refuse to inherit font and color unless asked. */
+button, input, select, textarea { font: inherit; color: inherit; }
+
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.err { color: var(--bad); }
+
+/* The micro-label: "• MEDIA LIBRARY". Small, uppercase, widely letterspaced,
+   with a dot in front. Used on every panel so the layout reads as a system. */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;     /* letterspacing is what sells small caps */
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+/* The dot is generated, not typed — `content` on ::before invents the box. */
+.eyebrow::before {
+  content: "";
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;                 /* stop flexbox squashing it */
+  box-shadow: 0 0 8px var(--accent);
+}
+.eyebrow.ember::before { background: var(--ember); box-shadow: 0 0 8px var(--ember); }
+
+
+/* ---------------------------------------------------------------------------
+   5. LAYOUT
    Two tools, and knowing which to reach for is most of CSS layout:
-     FLEXBOX (display: flex) — one row or column of items. Good for toolbars.
+     FLEXBOX (display: flex) — one row or column. Good for toolbars.
      GRID    (display: grid) — rows and columns at once. Good for page areas.
    ------------------------------------------------------------------------ */
 
 .app {
-  max-width: 1180px;      /* stop lines getting unreadably wide */
-  margin: 0 auto;         /* `auto` left+right centers the block */
-  padding: 20px 16px 60px;
+  max-width: 1180px;
+  margin: 0 auto;            /* `auto` left+right centers the block */
+  padding: 20px 16px 80px;
+  position: relative;
+  z-index: 1;                /* sit above the fixed aurora layers */
 }
 
-/* The header strip. `gap` spaces children without margins on each one. */
-.topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-/* An empty element with flex: 1 eats all leftover space, pushing whatever
-   follows it to the right edge. A classic flexbox spacer. */
+.topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+/* An empty element with flex: 1 eats leftover space, pushing what follows to
+   the right edge. The classic flexbox spacer. */
 .topbar .spacer { flex: 1; }
 
-/* `.grid` alone = a vertical stack with consistent spacing. */
+/* The wordmark: small, uppercase, with a glowing dot — not the serif H1. */
+.wordmark { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+.wordmark::before {
+  content: "";
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent);
+}
+
+/* The hero: centred headline, subtitle, and the stat pairs that flank it. */
+.hero { text-align: center; padding: 26px 0 36px; }
+.hero p { max-width: 520px; margin: 14px auto 0; color: var(--text-2); }
+
+/* Centre column with a stat rail on each side. Collapses to one column on
+   narrow screens, where the rails become a plain row under the headline. */
+.hero-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 28px; }
+.rail { display: grid; gap: 20px; }
+.rail.left { justify-items: start; text-align: left; }
+.rail.right { justify-items: end; text-align: right; }
+@media (max-width: 900px) {
+  .hero-row { grid-template-columns: 1fr; }
+  .rail { grid-auto-flow: column; justify-content: center; justify-items: center; text-align: center; }
+}
+
+/* A stat pair: serif numeral over a micro-label. */
+.stat .n { font-family: var(--font-display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-top: 5px; }
+
 .grid { display: grid; gap: 16px; }
-
-/* Two columns, 3:2. minmax(0, 3fr) instead of plain 3fr is deliberate: it
-   lets the column shrink below its content width so wide charts and long
-   words can't blow the layout out sideways. */
+/* minmax(0, 3fr) rather than 3fr lets the column shrink below its content
+   width, so wide charts can't blow the layout out sideways. */
 .grid.two { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
-
-/* A media query applies rules only when the condition is true. Below 860px
-   wide (tablets, phones) the two columns collapse into one. */
+/* A media query applies rules only when the condition holds. */
 @media (max-width: 860px) { .grid.two { grid-template-columns: 1fr; } }
 
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 
 /* ---------------------------------------------------------------------------
-   4. COMPONENTS
-   Each block below styles one reusable piece. The class names here are the
-   same strings you'll see in the React files as className="card", etc.
+   6. COMPONENTS
+   These class names are the strings you see in the React files as
+   className="card", className="btn", and so on.
    ------------------------------------------------------------------------ */
 
-/* --- Card: the container for nearly everything --- */
+/* --- Card ---
+   Slightly translucent so the aurora shows through, with a hairline border
+   and a 1px highlight along the top edge — the cheap trick that makes a
+   panel look lit from above. */
 .card {
-  background: var(--surface);
+  position: relative;
+  /* Translucent, so the aurora shows through, with a blur behind it to
+     keep text legible over whatever it covers. */
+  background: rgb(6 11 18 / 66%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px;
+  backdrop-filter: blur(18px) saturate(130%);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;          /* top edge only */
+  height: 1px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(90deg, transparent, rgb(2 151 222 / 45%), transparent);
 }
 
-/* Text emphasis helpers, used inline all over the components. */
-.muted { color: var(--muted); }
-.small { font-size: 12px; }
-.err { color: var(--bad); }
-
-
 /* --- Buttons ---
-   `.btn` is the filled sky-blue primary. `.btn.secondary` is the quiet one.
-   Two classes on one element both apply; the more specific `.btn.secondary`
-   wins where they disagree. */
+   `.btn` is the filled electric-blue primary with a glow. `.btn.secondary` is
+   the quiet one. Two classes on one element both apply; the more specific
+   `.btn.secondary` wins where they disagree. */
 .btn {
   background: var(--accent);
   color: var(--on-accent);
   border: 0;
-  border-radius: var(--radius-sm);
-  padding: 8px 14px;
+  border-radius: 99px;        /* fully rounded: any value past half the height */
+  padding: 9px 18px;
   cursor: pointer;
   font-weight: 650;
+  box-shadow: var(--glow);
   /* Animate only the properties that change — never `transition: all`. */
-  transition: background 120ms ease, box-shadow 120ms ease;
+  transition: background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
-.btn:hover { background: var(--accent-strong); }
+.btn:hover { background: var(--accent-strong); box-shadow: 0 0 36px rgb(2 151 222 / 45%); }
+.btn:active { transform: translateY(1px); }
 
-/* `:focus-visible` is the keyboard-only focus ring: it shows when someone
-   tabs to the button, but not on a mouse click. Never remove it outright. */
-.btn:focus-visible, a:focus-visible { outline: none; box-shadow: var(--ring); }
+/* `:focus-visible` is the keyboard-only focus ring — it shows on Tab but not
+   on a mouse click. Restyle it, never remove it. */
+.btn:focus-visible, a:focus-visible, .pill:focus-visible { outline: none; box-shadow: var(--ring); }
 
 .btn.secondary {
-  background: var(--surface-2);
+  background: rgb(15 24 34 / 80%);
   color: var(--text);
   border: 1px solid var(--border);
+  box-shadow: none;
 }
-.btn.secondary:hover { border-color: var(--accent-deep); color: var(--accent-strong); }
+.btn.secondary:hover { border-color: var(--accent-deep); color: var(--accent-strong); background: var(--surface-2); }
 
-/* `:disabled` is a state selector — no extra class needed, the browser knows. */
-.btn:disabled { opacity: 0.45; cursor: default; background: var(--surface-2); color: var(--muted); }
+/* `:disabled` is a state selector — the browser knows, no extra class needed. */
+.btn:disabled { opacity: 0.45; cursor: default; background: var(--surface-2); color: var(--muted); box-shadow: none; }
+
+/* The circular CTA from the reference: a ringed, glowing disc. */
+.btn-orb {
+  width: 108px; height: 108px;
+  border-radius: 50%;
+  display: grid; place-items: center;   /* shortest reliable way to centre */
+  gap: 2px;
+  background: radial-gradient(circle at 50% 35%, rgb(2 151 222 / 22%), rgb(8 14 22 / 90%) 70%);
+  border: 1px solid var(--accent-deep);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 0 0 7px rgb(2 151 222 / 7%), 0 0 44px rgb(2 151 222 / 28%), inset 0 0 26px rgb(2 151 222 / 16%);
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+.btn-orb:hover { border-color: var(--accent); box-shadow: 0 0 0 9px rgb(2 151 222 / 10%), 0 0 60px rgb(2 151 222 / 40%), inset 0 0 30px rgb(2 151 222 / 24%); }
 
 
 /* --- Inputs --- */
 input, select, textarea {
-  background: var(--surface-2);
+  background: rgb(15 24 34 / 75%);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 7px 10px;
+  padding: 8px 11px;
 }
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: var(--ring);
-}
-/* ::placeholder is a "pseudo-element": it styles a part the browser draws
-   inside the input, not a tag in your markup. */
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+/* ::placeholder styles a part the browser draws inside the input, not a tag
+   in your markup — that is what makes it a "pseudo-element". */
 input::placeholder { color: var(--muted); }
 
-/* A label stacked above its input. Grid with gap is tidier than <br>. */
-label.field { display: grid; gap: 4px; font-size: 12px; color: var(--text-2); }
+/* A label stacked above its input. Grid with gap beats <br>. */
+label.field { display: grid; gap: 5px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+label.field input { font-size: 14px; text-transform: none; letter-spacing: 0; color: var(--text); }
 
 
 /* --- Small markers --- */
-/* A colored dot. flex: none stops flexbox squashing it in a tight row. */
-.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
 
-/* A chip/tag. border-radius: 99px is the standard "fully rounded" trick:
-   any value past half the height gives a perfect pill. */
 .pill {
   font-size: 11px;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 99px;
   background: var(--accent-soft);
   color: var(--accent-strong);
-  border: 1px solid var(--border);
+  border: 1px solid rgb(2 151 222 / 22%);
 }
 
 
-/* --- Banner: full-width warning or status message --- */
+/* --- Banner --- */
 .banner {
   display: flex;
   gap: 10px;
   align-items: center;
   background: var(--warn-bg);
   color: var(--warn-text);
-  border: 1px solid rgb(252 211 77 / 25%);
+  border: 1px solid rgb(252 176 77 / 22%);
   border-radius: var(--radius);
-  padding: 10px 14px;
+  padding: 11px 15px;
 }
 /* margin-left: auto on a flex child pushes it, and only it, to the far end. */
 .banner .btn { margin-left: auto; }
@@ -263,61 +425,61 @@ label.field { display: grid; gap: 4px; font-size: 12px; color: var(--text-2); }
 
 /* --- Onboarding checklist --- */
 .steps { display: grid; gap: 12px; }
-/* A fixed 28px gutter for the number, then one flexible column for the body. */
-.step { display: grid; grid-template-columns: 28px 1fr; gap: 12px; }
+/* A fixed 30px gutter for the number, then one flexible column. */
+.step { display: grid; grid-template-columns: 30px 1fr; gap: 14px; }
 .step-num {
-  width: 28px; height: 28px;
+  width: 30px; height: 30px;
   border-radius: 50%;
-  /* `display: grid` + `place-items: center` is the shortest reliable way to
-     center one thing both horizontally and vertically. */
   display: grid; place-items: center;
-  font-weight: 700;
+  font-size: 12px; font-weight: 700;
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--text-2);
 }
-/* `.step.done .step-num` = a .step-num INSIDE an element that has both
-   .step and .done. The space means "descendant of". */
-.step.done .step-num { background: var(--good); color: var(--on-accent); border-color: transparent; }
+/* `.step.done .step-num` = a .step-num INSIDE an element with BOTH .step and
+   .done. The space means "descendant of". */
+.step.done .step-num { background: var(--good); color: var(--midnight); border-color: transparent; box-shadow: 0 0 18px rgb(61 220 151 / 35%); }
 
-.instructions { background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 14px; margin: 8px 0; }
+.instructions { background: rgb(15 24 34 / 70%); border-radius: var(--radius-sm); padding: 11px 15px; margin: 8px 0; }
 .instructions ol { margin: 4px 0 8px; padding-left: 20px; }
 
-/* File drop target. The dashed border is the universal "drop here" signal;
-   .over is added by React while a file is dragged over it. */
+/* The dashed border is the universal "drop here" signal. React adds .over
+   while a file is dragged across it. */
 .dropzone {
-  border: 2px dashed var(--border);
+  border: 1px dashed var(--border);
   border-radius: var(--radius);
-  padding: 22px;
+  padding: 26px;
   text-align: center;
   cursor: pointer;
-  transition: border-color 120ms ease, background 120ms ease;
+  background: rgb(15 24 34 / 40%);
+  transition: border-color 140ms ease, background 140ms ease;
 }
 .dropzone:hover { border-color: var(--accent-deep); }
 .dropzone.over { border-color: var(--accent); background: var(--accent-soft); }
 
-.preview { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-top: 10px; }
-.warn { color: var(--warn-text); background: var(--warn-bg); padding: 6px 10px; border-radius: 6px; margin: 6px 0; font-size: 13px; }
+.preview { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 13px; margin-top: 10px; }
+.warn { color: var(--warn-text); background: var(--warn-bg); padding: 7px 11px; border-radius: var(--radius-sm); margin: 6px 0; font-size: 13px; }
 
 
-/* --- KPI tiles: the headline numbers --- */
-/* repeat(auto-fit, minmax(180px, 1fr)) is responsive with no media query:
-   fit as many >=180px columns as will fit, then share the leftover space.
-   Four across on a laptop, one on a phone, automatically. */
+/* --- KPI tiles ---
+   repeat(auto-fit, minmax(180px, 1fr)) is responsive with no media query: fit
+   as many >=180px columns as will fit, then share the leftover space. */
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
 
-/* These tiles are real <button>s, so they get hover and focus feedback. */
-.kpi { transition: border-color 120ms ease, background 120ms ease; }
-.kpi:hover { border-color: var(--accent-deep); background: var(--surface-2); }
+/* These are real <button>s, so they get hover and focus feedback. */
+.kpi { text-align: left; cursor: pointer; transition: border-color 140ms ease, background 140ms ease; }
+.kpi:hover { border-color: var(--accent-deep); background: rgb(15 24 34 / 88%); }
 .kpi:focus-visible { outline: none; box-shadow: var(--ring); border-color: var(--accent); }
 
-.kpi .label { display: flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 12px; }
+.kpi .label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; }
 .kpi .value {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 4px 0 2px;
-  /* Makes every digit the same width, so numbers don't jiggle as they
-     update. Essential for any dashboard. */
+  font-family: var(--font-display);   /* the serif numerals, as in the hero */
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+  margin: 12px 0 7px;
+  /* Every digit the same width, so numbers don't jiggle as they update.
+     Essential in any dashboard. */
   font-variant-numeric: tabular-nums;
 }
 .delta { font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -325,42 +487,39 @@ label.field { display: grid; gap: 4px; font-size: 12px; color: var(--text-2); }
 .delta.down { color: var(--bad); }
 
 
-/* --- Chart furniture (the chart itself is drawn by Recharts in React) --- */
-.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); margin-top: 6px; }
-/* A line sample with no height: just a top border. The color is set inline
-   in React so it always matches the series it describes. */
+/* --- Chart furniture (Recharts draws the chart itself, from React) --- */
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--text-2); margin-top: 8px; }
+/* A line sample with no height: just a top border. React sets the color
+   inline so it always matches the series it describes. */
 .legend .swatch { display: inline-block; width: 18px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
 .legend .swatch.dashed { border-top-style: dashed; }
-.legend .swatch.band { height: 10px; border: 0; opacity: 0.25; }
+.legend .swatch.band { height: 10px; border: 0; opacity: 0.3; }
 
 .tooltip {
-  background: var(--surface-2);
+  background: rgb(8 14 22 / 96%);
   border: 1px solid var(--accent-deep);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
+  padding: 9px 11px;
   font-size: 12px;
-  /* On black, a shadow alone is invisible — the border above does the lifting
-     and the shadow just softens the edge. */
-  box-shadow: 0 8px 24px rgb(0 0 0 / 55%);
+  box-shadow: 0 10px 34px rgb(0 0 0 / 65%);
 }
-/* justify-content: space-between pushes the label left and value right. */
+/* space-between pushes the label left and the value right. */
 .tooltip .t-row { display: flex; justify-content: space-between; gap: 14px; font-variant-numeric: tabular-nums; }
 
 
-/* --- Insights and data tables --- */
-.insight { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+/* --- Insights and tables --- */
+.insight { border-top: 1px solid var(--border); padding-top: 13px; margin-top: 13px; }
 /* `:is(h1, h2, h3)` matches any of the three — shorthand for three selectors. */
-.insight :is(h1, h2, h3) { font-size: 14px; margin-top: 12px; color: var(--text); }
+.insight :is(h1, h2, h3) { font-size: 14px; font-family: var(--font-ui); margin-top: 12px; color: var(--text); }
 .insight ul { padding-left: 18px; color: var(--text-2); }
 
-/* Explicit column widths keep the event rows aligned with each other. */
-.event-row { display: grid; grid-template-columns: 130px 110px 1fr 70px 28px; gap: 6px; margin-bottom: 6px; }
+.event-row { display: grid; grid-template-columns: 130px 110px 1fr 70px 30px; gap: 6px; margin-bottom: 6px; }
 @media (max-width: 600px) { .event-row { grid-template-columns: 1fr 1fr; } }
 
 table.data { width: 100%; border-collapse: collapse; font-size: 12px; }
-/* One rule for both <td> and <th> — comma means "or". */
-table.data td, table.data th { padding: 5px 6px; border-bottom: 1px solid var(--border); text-align: left; }
-table.data th { color: var(--muted); font-weight: 600; }
-/* `tbody tr:last-child td` strips the final divider, which otherwise reads
-   as a stray line under the table. */
+/* One rule for both <td> and <th> — a comma means "or". */
+table.data td, table.data th { padding: 6px; border-bottom: 1px solid var(--border); text-align: left; }
+table.data th { color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+table.data td { font-variant-numeric: tabular-nums; }
+/* Strip the final divider, which otherwise reads as a stray line. */
 table.data tbody tr:last-child td { border-bottom: 0; }

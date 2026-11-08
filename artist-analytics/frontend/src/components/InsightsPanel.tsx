@@ -49,7 +49,7 @@ export default function InsightsPanel({ artistId }: { artistId: number }) {
   return (
     <div className="card">
       <div className="row">
-        <h2 style={{ margin: 0 }}>Claude's analysis</h2>
+        <p className="eyebrow ember" style={{ margin: 0 }}>Claude's analysis</p>
         <span className="spacer" style={{ flex: 1 }} />
         <button className="btn" onClick={() => run("report")} disabled={busy !== null}>{busy === "report" ? "Analyzing…" : "New trend report"}</button>
       </div>

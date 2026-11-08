@@ -106,6 +106,7 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
       <KpiRow summary={summary} onPick={(platform, metric) => setSel({ platform, metric })} />
 
       <div className="card">
+        <p className="eyebrow">Trend</p>
         <div className="row" style={{ marginBottom: 8 }}>
           <select
             value={sel ? `${sel.platform}|${sel.metric}` : ""}
@@ -131,13 +132,15 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
           </div>
         </div>
         {series ? <TrendChart series={series} /> : <p className="muted">Loading chart…</p>}
+        {/* Every panel carries one of these micro-labels, which is what makes
+            the separate cards read as a single system. */}
       </div>
 
       <div className="grid two">
         <div className="grid">
           {sel && selIsDaily && <ScenarioPanel artistId={artist.id} platform={sel.platform} metric={sel.metric} />}
           <div className="card">
-            <h2>Signals</h2>
+            <p className="eyebrow">Signals</p>
             {leadLag.length > 0 && (
               <>
                 <h3>Which platform moves first</h3>
