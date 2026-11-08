@@ -12,8 +12,24 @@ import type {
   UploadPreview,
 } from "./types";
 
+/**
+ * A marker string used as an error message when the server can't be reached
+ * at all (as opposed to the server answering with an error). App.tsx compares
+ * against it to decide whether to show the "backend isn't running" banner.
+ * Exported as a constant so the two files can't drift apart over a typo.
+ */
+export const BACKEND_DOWN = "BACKEND_DOWN";
+
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  let res: Response;
+  try {
+    res = await fetch(path, init);
+  } catch {
+    // fetch() only rejects when the request never completed — the server is
+    // down, DNS failed, the connection dropped. An HTTP 500 is a *successful*
+    // fetch, and is handled by the !res.ok branch below.
+    throw new Error(BACKEND_DOWN);
+  }
   if (!res.ok) {
     let detail = res.statusText;
     try {

@@ -1,3 +1,17 @@
+/**
+ * Dashboard.tsx — the main screen: KPI tiles, a trend chart, and side panels.
+ *
+ * NEW TO REACT? This is the component that shows how effects and dependency
+ * arrays really work. It runs two separate useEffects:
+ *
+ *   [artist.id]        -> reload everything when a different artist is picked
+ *   [artist.id, sel, days] -> refetch only the chart when the metric or range
+ *                             changes, leaving the rest of the screen alone
+ *
+ * Splitting them is the point. One big effect would refetch everything every
+ * time you tapped a date-range button.
+ */
+
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import type { Artist, Available, Onboarding, Platform, Series, Summary } from "../types";
@@ -8,6 +22,8 @@ import TrendChart from "./TrendChart";
 import ScenarioPanel from "./ScenarioPanel";
 import InsightsPanel from "./InsightsPanel";
 
+// Static option lists live outside the component so they aren't rebuilt on
+// every render.
 const RANGES = [
   { label: "90 days", days: 90 },
   { label: "6 months", days: 180 },
@@ -16,6 +32,8 @@ const RANGES = [
 ];
 
 export default function Dashboard({ artist, onOpenSources }: { artist: Artist; onOpenSources: () => void }) {
+  // A `T | null` state with null meaning "not loaded yet" is the simplest
+  // loading pattern there is: no separate boolean to keep in sync.
   const [summary, setSummary] = useState<Summary | null>(null);
   const [onb, setOnb] = useState<Onboarding | null>(null);
   const [avail, setAvail] = useState<Available[]>([]);
@@ -24,10 +42,15 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
   const [series, setSeries] = useState<Series | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Effect 1: load everything for this artist.
   useEffect(() => {
+    // Clear the old artist's data first, so you never see artist A's numbers
+    // under artist B's name while the new request is in flight.
     setSummary(null);
     setSeries(null);
     setSel(null);
+    // Promise.all fires all three requests at once and waits for the slowest,
+    // instead of awaiting them one after another.
     Promise.all([api.summary(artist.id), api.onboarding(artist.id), api.available(artist.id)])
       .then(([s, o, a]) => {
         setSummary(s);
@@ -37,13 +60,19 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
         if (first) setSel({ platform: first.platform, metric: first.metric });
       })
       .catch((e) => setError(e.message));
+    // The dependency array: re-run this effect whenever artist.id changes.
   }, [artist.id]);
 
+  // Effect 2: load just the chart series. Separate effect, separate deps.
   useEffect(() => {
     if (!sel) return;
     api.series(artist.id, sel.platform, sel.metric, days).then(setSeries).catch((e) => setError(e.message));
   }, [artist.id, sel, days]);
 
+  // Early returns handle the error and loading screens, so the JSX at the
+  // bottom can assume the data exists. Note that these come *after* all the
+  // hook calls — hooks must run in the same order on every render, so they
+  // can never sit below a conditional return.
   if (error) return <p className="err">{error}</p>;
   if (!summary) return <p className="muted">Loading…</p>;
 
@@ -71,6 +100,9 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
         </div>
       ))}
 
+      {/* Passing a setter down as a callback: clicking a KPI tile changes
+          `sel` here, which re-runs effect 2, which loads a new chart. The
+          child knows nothing about any of that. */}
       <KpiRow summary={summary} onPick={(platform, metric) => setSel({ platform, metric })} />
 
       <div className="card">
@@ -90,6 +122,9 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
             ))}
           </select>
           <div className="row" role="group" aria-label="Date range">
+            {/* The selected button gets `.btn` (solid sky blue) and the rest
+                get `.btn secondary` (quiet outline) — comparing state to the
+                item is how you style the active one. */}
             {RANGES.map((r) => (
               <button key={r.days} className={`btn ${days === r.days ? "" : "secondary"}`} onClick={() => setDays(r.days)}>{r.label}</button>
             ))}

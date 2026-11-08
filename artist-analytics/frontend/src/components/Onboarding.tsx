@@ -4,6 +4,14 @@ import type { Artist, Onboarding as OnboardingT, OnboardingStep } from "../types
 import UploadBox from "./UploadBox";
 
 /**
+ * Onboarding.tsx — the "get your data in" checklist.
+ *
+ * NEW TO REACT? The pattern to take away: a single `load` function is defined
+ * once, called from an effect on mount, and also passed *down* to UploadBox as
+ * `onImported`. When a child finishes importing it calls that function, this
+ * component refetches, and the checklist updates. Children never reach into
+ * their parent's state — they call a function the parent gave them.
+ *
  * The guided flow: each platform step has a button that opens the artist
  * portal in a new tab, the export steps to follow there, and the drop box to
  * come back to. The checklist refreshes after every import.
@@ -12,6 +20,8 @@ export default function Onboarding({ artist, onDone }: { artist: Artist; onDone:
   const [data, setData] = useState<OnboardingT | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Not wrapped in useEffect itself — it's just a function. The effect below
+  // calls it on mount; UploadBox calls it again after each import.
   const load = () => api.onboarding(artist.id).then(setData).catch((e) => setError(e.message));
   useEffect(() => {
     load();
@@ -39,6 +49,8 @@ export default function Onboarding({ artist, onDone }: { artist: Artist; onDone:
 
       <div className="steps">
         {data.steps.map((s, i) => (
+          // Adding the `done` class lets CSS alone turn the step number
+          // green — `.step.done .step-num` in styles.css. No JS styling.
           <div key={s.id} className={`card step ${s.done ? "done" : ""}`}>
             <div className="step-num" aria-label={s.done ? "done" : `step ${i + 1}`}>{s.done ? "✓" : i + 1}</div>
             <StepBody step={s} artistId={artist.id} onChange={load} />
@@ -54,6 +66,8 @@ export default function Onboarding({ artist, onDone }: { artist: Artist; onDone:
   );
 }
 
+// A second component in the same file. Perfectly normal when it's only used
+// here; only the `export default` one is visible to other files.
 function StepBody({ step, artistId, onChange }: { step: OnboardingStep; artistId: number; onChange: () => void }) {
   const fresh = step.freshness;
   const status = fresh?.has_data ? (
@@ -62,6 +76,8 @@ function StepBody({ step, artistId, onChange }: { step: OnboardingStep; artistId
     </span>
   ) : null;
 
+  // Three different step types, each returning its own JSX. Early returns
+  // read far better than one giant nested ternary.
   if (step.id === "profile") {
     return (
       <div>

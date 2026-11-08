@@ -1,3 +1,16 @@
+/**
+ * TrendChart.tsx — the big line chart.
+ *
+ * NEW TO REACT? Two things worth noticing here:
+ *
+ *  1. Recharts is a component library: you *describe* a chart with nested
+ *     components (<Line>, <XAxis>…) instead of issuing drawing commands. Same
+ *     idea as the rest of React — declare the result, not the steps.
+ *  2. Every color is a `var(--…)` string from styles.css, never a literal.
+ *     That's why the chart matches the midnight/sky-blue theme automatically,
+ *     and why editing one variable restyles the chart too.
+ */
+
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Series } from "../types";
 import { PLATFORM_LABEL } from "../types";
@@ -16,7 +29,11 @@ interface Row {
  * the small legend below explains the line styles: solid = reported, dashed = estimated
  * between uploads, dotted + band = forecast with 80% range. Events are vertical markers.
  */
+// `height = 300` is a default prop value: plain JavaScript default
+// parameters, so <TrendChart series={s} /> gets 300 without extra code.
 export default function TrendChart({ series, height = 300 }: { series: Series; height?: number }) {
+  // Pick the series color by platform: --spotify (sky blue), --apple_music,
+  // --youtube. Defined once in styles.css, used here and in the legend.
   const color = `var(--${series.platform})`;
   const byDay = new Map<string, Row>();
   const get = (d: string) => byDay.get(d) ?? byDay.set(d, { day: d }).get(d)!;
@@ -49,11 +66,16 @@ export default function TrendChart({ series, height = 300 }: { series: Series; h
 
   return (
     <div>
+      {/* ResponsiveContainer measures its parent and re-renders the chart at
+          that size, which is how an SVG chart becomes responsive. It needs a
+          real height, which is why `height` is a prop rather than CSS. */}
       <ResponsiveContainer width="100%" height={height}>
         <ComposedChart data={rows} margin={{ top: 16, right: 12, bottom: 0, left: 0 }}>
           <CartesianGrid stroke="var(--grid)" vertical={false} />
           <XAxis dataKey="day" tickFormatter={shortDate} minTickGap={40} tick={{ fill: "var(--muted)", fontSize: 11 }} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
           <YAxis tickFormatter={(v) => fmtNum(v)} width={52} tick={{ fill: "var(--muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
+          {/* Passing a component as a prop value. Recharts renders our
+              <ChartTooltip> and hands it the hovered data. */}
           <Tooltip content={<ChartTooltip metric={series.metric} events={series.events} />} cursor={{ stroke: "var(--muted)", strokeDasharray: "3 3" }} />
           {events.map((e) => (
             <ReferenceLine
@@ -64,6 +86,8 @@ export default function TrendChart({ series, height = 300 }: { series: Series; h
               label={{ value: e.kind === "release" ? "♪" : e.kind[0].toUpperCase(), position: "top", fill: "var(--text-2)", fontSize: 11 }}
             />
           ))}
+          {/* Draw order = paint order: the translucent forecast band goes
+              first so the lines sit on top of it. */}
           <Area dataKey="band" stroke="none" fill={color} fillOpacity={0.15} isAnimationActive={false} connectNulls />
           <Line dataKey="actual" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
           <Line dataKey="estimated" stroke={color} strokeWidth={2} strokeDasharray="6 4" dot={false} isAnimationActive={false} connectNulls />

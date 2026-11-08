@@ -1,12 +1,41 @@
 <!doctype html>
+<!--
+  index.html — the only HTML file in the app.
+
+  A React app is a "single page app": the browser loads this one nearly-empty
+  page, then JavaScript builds every screen inside it. So this file only has
+  three jobs: set page metadata, provide an empty box for React to fill, and
+  load the script that starts React.
+-->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-     <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- set mobile browsers to 100% by default && match the page width with the width of the screen being used to access it -->
-    <title>Artist Analytics</title> 
+
+    <!--
+      The viewport tag. Without it, phones pretend to be a ~980px desktop and
+      shrink the whole page to fit. `width=device-width` says "use the real
+      screen width" and `initial-scale=1.0` says "don't zoom out".
+      Our CSS media queries only work correctly because of this line.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Shown in the browser tab and when someone bookmarks the page. -->
+    <title>Artist Analytics</title>
   </head>
+
   <body>
-    <div id="root"></div> <!-- React Container/ Mount Point-->
-    <script type="module" src="/src/main.tsx"></script> <!--Starts React, renders the app into # root-->
+    <!--
+      React's mount point. It is empty on purpose: main.tsx finds this div by
+      its id and renders the entire component tree inside it. Everything you
+      see in the running app lives here.
+    -->
+    <div id="root"></div>
+
+    <!--
+      The entry point. type="module" lets the file use `import`, and Vite (our
+      dev server and bundler) follows those imports to pull in every component
+      and stylesheet. This one tag is why no other file is listed here.
+    -->
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

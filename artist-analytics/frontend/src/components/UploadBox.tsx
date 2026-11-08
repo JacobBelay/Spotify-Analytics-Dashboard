@@ -1,3 +1,12 @@
+/**
+ * UploadBox.tsx — drag-and-drop CSV import with a confirmation preview.
+ *
+ * NEW TO REACT? This introduces `useRef`. State is for values you render;
+ * a ref is for holding onto something without triggering a re-render — here,
+ * the hidden <input type="file"> so a click on the pretty drop zone can
+ * forward to it. Changing a ref never re-renders; changing state always does.
+ */
+
 import { useRef, useState } from "react";
 import { api } from "../api";
 import type { Platform, UploadPreview } from "../types";
@@ -14,6 +23,8 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
   const [preview, setPreview] = useState<UploadPreview | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // `over` drives the `.dropzone.over` sky-blue highlight while dragging.
+  // `input` will point at the real DOM node after the first render.
   const input = useRef<HTMLInputElement>(null);
 
   const inspect = async (f: File) => {
@@ -21,6 +32,7 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
     setStatus(null);
     setBusy(true);
     try {
+      // dryRun = true: the server parses and reports, but saves nothing.
       const res = await api.upload(artistId, f, platform, true);
       setPreview(res.preview);
     } catch (e) {
@@ -34,6 +46,7 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
     if (!file) return;
     setBusy(true);
     try {
+      // dryRun = false — this one actually writes.
       const res = await api.upload(artistId, file, platform, false);
       setStatus(`Imported ${res.imported_rows?.toLocaleString()} rows from ${file.name}.`);
       setPreview(null);
@@ -52,8 +65,15 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
         className={`dropzone ${over ? "over" : ""}`}
         role="button"
         tabIndex={0}
+        // `.current` is the DOM node the ref is attached to. `?.` guards the
+        // first render, when it is still null.
         onClick={() => input.current?.click()}
+        // Because this is a <div> pretending to be a button, the keyboard
+        // handling that a real <button> gives free has to be written by hand:
+        // role, tabIndex, and Enter/Space. Prefer a real button where you can.
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && input.current?.click()}
+        // preventDefault() on dragover and drop is mandatory — without it the
+        // browser navigates away and opens the file instead.
         onDragOver={(e) => { e.preventDefault(); setOver(true); }}
         onDragLeave={() => setOver(false)}
         onDrop={(e) => {
@@ -65,6 +85,8 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
       >
         <strong>Drop your {PLATFORM_LABEL[platform]} CSV here</strong>
         <div className="muted small">or click to choose a file. Nothing is saved until you confirm.</div>
+        {/* The real file input, hidden because it can't be styled well.
+            `ref={input}` is what connects it to the useRef above. */}
         <input ref={input} type="file" accept=".csv,text/csv" hidden onChange={(e) => e.target.files?.[0] && inspect(e.target.files[0])} />
       </div>
 
@@ -75,6 +97,8 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
           {preview.file_type === "unknown" ? (
             <p className="err">We couldn't recognize this file. Make sure it's an export from {PLATFORM_LABEL[platform]} for Artists.</p>
           ) : (
+            // <>…</> is a Fragment: it groups siblings without adding a
+            // wrapper <div> to the page, which would disturb the layout.
             <>
               <h3>
                 Found a {preview.file_type} export
@@ -106,6 +130,8 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
   );
 }
 
+// Renders any array of flat objects as a table by reading the column names
+// off the first row.
 function SmallTable({ rows }: { rows: Record<string, unknown>[] }) {
   if (!rows.length) return null;
   const cols = Object.keys(rows[0]);
@@ -115,6 +141,9 @@ function SmallTable({ rows }: { rows: Record<string, unknown>[] }) {
         <tr>{cols.map((c) => <th key={c}>{metricLabel(c)}</th>)}</tr>
       </thead>
       <tbody>
+        {/* Using the array index as a key is acceptable only because these
+            rows are read-only and never reordered or filtered. Anywhere else,
+            use a real id. */}
         {rows.map((r, i) => (
           <tr key={i}>
             {cols.map((c) => (

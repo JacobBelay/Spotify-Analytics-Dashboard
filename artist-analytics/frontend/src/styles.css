@@ -1,113 +1,366 @@
+/* ============================================================================
+   styles.css — the single stylesheet for the whole app.
+   ----------------------------------------------------------------------------
+   NEW TO CSS? Read this header once and the rest of the file will make sense.
+
+   1. A rule looks like:  selector { property: value; }
+      `.card { padding: 16px; }` means "every element with class='card' gets
+      16px of inner spacing".
+
+   2. We never hard-code a color below this file's top section. Instead we
+      define "custom properties" (also called CSS variables) once, then refer
+      to them with var(). Change --accent in one place and the entire app
+      changes. That is the whole trick behind a theme.
+
+   3. Theme used here: MIDNIGHT BLACK surfaces + SKY BLUE accent.
+      Blacks carry the layout, sky blue is reserved for things you can click
+      or should look at. If everything glows, nothing does.
+
+   4. Order matters. Later rules of equal "specificity" win, so this file goes
+      general -> specific: variables, reset, text, layout, components.
+   ========================================================================= */
+
+
+/* ---------------------------------------------------------------------------
+   1. DESIGN TOKENS
+   `:root` is the <html> element — the outermost box on the page. Variables
+   declared here are visible to every element, because CSS variables inherit
+   downward. This is our palette; nothing else in the file invents a color.
+   ------------------------------------------------------------------------ */
 :root {
-  color-scheme: light;
-  --bg: #f6f6f4;
-  --surface: #fcfcfb;
-  --surface-2: #f0efec;
-  --border: #e2e1dc;
-  --text: #0b0b0b;
-  --text-2: #52514e;
-  --muted: #85847f;
-  --accent: #2a78d6;
-  --grid: #e8e7e3;
-  /* Platform identity = categorical slots 1-3 (validated all-pairs for CVD) */
-  --spotify: #2a78d6;
-  --apple_music: #eb6834;
-  --youtube: #1baf7a;
-  --good: #1a7f37;
-  --warn-bg: #fff4d6;
-  --warn-text: #7a5200;
-  --bad: #c62828;
-  --radius: 10px;
+  /* Tells the browser to render its own UI (scrollbars, form controls,
+     autofill) in dark mode so it matches our page instead of flashing white. */
+  color-scheme: dark;
+
+  /* --- Midnight black: four steps, darkest to lightest ---
+     Depth comes from stacking slightly lighter surfaces, not from shadows. */
+  --bg: #05060a;        /* the page itself — the deepest black */
+  --surface: #0d1017;   /* cards sitting on the page */
+  --surface-2: #161b25; /* inputs and chips sitting on a card */
+  --border: #212a38;    /* hairlines that separate the layers */
+
+  /* --- Text: three levels of emphasis ---
+     Never use pure #fff on pure black; it vibrates. These are blue-tinted
+     off-whites so the text feels part of the same family as the accent. */
+  --text: #e9f1fa;      /* headings and numbers */
+  --text-2: #a5b4c8;    /* body copy, labels */
+  --muted: #6d7f97;     /* captions, axis ticks, "not important" */
+
+  /* --- Sky blue: the one accent ---
+     Buttons, links, focus rings, the primary chart line. */
+  --accent: #38bdf8;         /* the sky blue */
+  --accent-strong: #7dd3fc;  /* hover — lighter reads as "closer" on dark */
+  --accent-deep: #0284c7;    /* pressed / borders of filled buttons */
+  /* A translucent wash of the accent. rgb(... / 12%) lets the black show
+     through, so tinted backgrounds stay in the midnight family. */
+  --accent-soft: rgb(56 189 248 / 12%);
+  --on-accent: #04121c;      /* text ON a sky-blue button: dark, not white */
+
+  /* --- Chart series colors ---
+     Three platforms = three hues that stay distinguishable for color-blind
+     readers (tested as a set): sky blue, amber, mint. */
+  --spotify: #38bdf8;
+  --apple_music: #fbbf24;
+  --youtube: #34d399;
+  --grid: #171e29;      /* chart gridlines: barely there on purpose */
+
+  /* --- Status colors --- */
+  --good: #34d399;
+  --bad: #fb7185;
+  --warn-text: #fcd34d;
+  --warn-bg: rgb(252 211 77 / 10%);
+
+  /* --- Shape and type ---
+     Tokens aren't only for color. Reusing one radius everywhere is what
+     makes an interface look designed rather than assembled. */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --ring: 0 0 0 3px rgb(56 189 248 / 35%); /* the focus glow */
+
   font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg: #111110;
-    --surface: #1a1a19;
-    --surface-2: #232321;
-    --border: #33322f;
-    --text: #ffffff;
-    --text-2: #c3c2b7;
-    --muted: #8f8e87;
-    --accent: #3987e5;
-    --grid: #2b2a28;
-    --spotify: #3987e5;
-    --apple_music: #d95926;
-    --youtube: #199e70;
-    --good: #4cc26b;
-    --warn-bg: #3a2e0c;
-    --warn-text: #f5d27a;
-    --bad: #ef6b6b;
-  }
+
+
+/* ---------------------------------------------------------------------------
+   2. RESET AND BASE
+   Browsers ship their own default styles. These few rules flatten the
+   defaults we don't want, so our rules start from a predictable place.
+   ------------------------------------------------------------------------ */
+
+/* `*` matches every element. border-box means "padding and border count
+   INSIDE the width I set", which is how humans expect boxes to work. */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;                 /* browsers add 8px by default; we don't want it */
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;         /* unitless = 1.45x the font size, so it scales */
+  -webkit-font-smoothing: antialiased; /* thinner text on dark backgrounds */
+
+  /* A single sky-blue glow behind the top of the page. `fixed` keeps it put
+     while content scrolls, so it reads as ambient light, not as an element. */
+  background-image: radial-gradient(900px 500px at 50% -15%, rgb(56 189 248 / 7%), transparent 70%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.45; }
-h1, h2, h3 { margin: 0 0 8px; line-height: 1.2; }
+h1, h2, h3 { margin: 0 0 8px; line-height: 1.2; letter-spacing: -0.01em; }
 h1 { font-size: 22px; }
 h2 { font-size: 17px; }
-h3 { font-size: 14px; }
-a { color: var(--accent); }
+h3 { font-size: 14px; color: var(--text-2); }
+
+a { color: var(--accent); text-decoration-color: var(--accent-deep); }
+a:hover { color: var(--accent-strong); }
+
+/* Form elements refuse to inherit font and color unless you ask them to. */
 button, input, select, textarea { font: inherit; color: inherit; }
 
-.app { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
+/* Respect people who have asked their OS to reduce animation. Always pair
+   any transition you add with this block. */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+
+/* ---------------------------------------------------------------------------
+   3. LAYOUT
+   Two tools, and knowing which to reach for is most of CSS layout:
+     FLEXBOX (display: flex) — one row or column of items. Good for toolbars.
+     GRID    (display: grid) — rows and columns at once. Good for page areas.
+   ------------------------------------------------------------------------ */
+
+.app {
+  max-width: 1180px;      /* stop lines getting unreadably wide */
+  margin: 0 auto;         /* `auto` left+right centers the block */
+  padding: 20px 16px 60px;
+}
+
+/* The header strip. `gap` spaces children without margins on each one. */
 .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+/* An empty element with flex: 1 eats all leftover space, pushing whatever
+   follows it to the right edge. A classic flexbox spacer. */
 .topbar .spacer { flex: 1; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+
+/* `.grid` alone = a vertical stack with consistent spacing. */
 .grid { display: grid; gap: 16px; }
+
+/* Two columns, 3:2. minmax(0, 3fr) instead of plain 3fr is deliberate: it
+   lets the column shrink below its content width so wide charts and long
+   words can't blow the layout out sideways. */
 .grid.two { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+
+/* A media query applies rules only when the condition is true. Below 860px
+   wide (tablets, phones) the two columns collapse into one. */
 @media (max-width: 860px) { .grid.two { grid-template-columns: 1fr; } }
+
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+
+/* ---------------------------------------------------------------------------
+   4. COMPONENTS
+   Each block below styles one reusable piece. The class names here are the
+   same strings you'll see in the React files as className="card", etc.
+   ------------------------------------------------------------------------ */
+
+/* --- Card: the container for nearly everything --- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+/* Text emphasis helpers, used inline all over the components. */
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
-.btn { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
-.btn.secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
-.btn:disabled { opacity: 0.5; cursor: default; }
-input, select, textarea { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; }
-input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-label.field { display: grid; gap: 4px; font-size: 12px; color: var(--text-2); }
-
-.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
-.pill { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
-
-.banner { display: flex; gap: 10px; align-items: center; background: var(--warn-bg); color: var(--warn-text); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; }
-.banner .btn { margin-left: auto; }
-
-/* Onboarding */
-.steps { display: grid; gap: 12px; }
-.step { display: grid; grid-template-columns: 28px 1fr; gap: 12px; }
-.step-num { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--surface-2); border: 1px solid var(--border); }
-.step.done .step-num { background: var(--good); color: #fff; border-color: transparent; }
-.instructions { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
-.instructions ol { margin: 4px 0 8px; padding-left: 20px; }
-.dropzone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 22px; text-align: center; cursor: pointer; }
-.dropzone.over { border-color: var(--accent); background: var(--surface-2); }
-.preview { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 10px; }
-.warn { color: var(--warn-text); background: var(--warn-bg); padding: 6px 10px; border-radius: 6px; margin: 6px 0; font-size: 13px; }
 .err { color: var(--bad); }
 
-/* KPI tiles */
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+
+/* --- Buttons ---
+   `.btn` is the filled sky-blue primary. `.btn.secondary` is the quiet one.
+   Two classes on one element both apply; the more specific `.btn.secondary`
+   wins where they disagree. */
+.btn {
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 650;
+  /* Animate only the properties that change — never `transition: all`. */
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+.btn:hover { background: var(--accent-strong); }
+
+/* `:focus-visible` is the keyboard-only focus ring: it shows when someone
+   tabs to the button, but not on a mouse click. Never remove it outright. */
+.btn:focus-visible, a:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.btn.secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn.secondary:hover { border-color: var(--accent-deep); color: var(--accent-strong); }
+
+/* `:disabled` is a state selector — no extra class needed, the browser knows. */
+.btn:disabled { opacity: 0.45; cursor: default; background: var(--surface-2); color: var(--muted); }
+
+
+/* --- Inputs --- */
+input, select, textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+/* ::placeholder is a "pseudo-element": it styles a part the browser draws
+   inside the input, not a tag in your markup. */
+input::placeholder { color: var(--muted); }
+
+/* A label stacked above its input. Grid with gap is tidier than <br>. */
+label.field { display: grid; gap: 4px; font-size: 12px; color: var(--text-2); }
+
+
+/* --- Small markers --- */
+/* A colored dot. flex: none stops flexbox squashing it in a tight row. */
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* A chip/tag. border-radius: 99px is the standard "fully rounded" trick:
+   any value past half the height gives a perfect pill. */
+.pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid var(--border);
+}
+
+
+/* --- Banner: full-width warning or status message --- */
+.banner {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  border: 1px solid rgb(252 211 77 / 25%);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+/* margin-left: auto on a flex child pushes it, and only it, to the far end. */
+.banner .btn { margin-left: auto; }
+
+
+/* --- Onboarding checklist --- */
+.steps { display: grid; gap: 12px; }
+/* A fixed 28px gutter for the number, then one flexible column for the body. */
+.step { display: grid; grid-template-columns: 28px 1fr; gap: 12px; }
+.step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  /* `display: grid` + `place-items: center` is the shortest reliable way to
+     center one thing both horizontally and vertically. */
+  display: grid; place-items: center;
+  font-weight: 700;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+/* `.step.done .step-num` = a .step-num INSIDE an element that has both
+   .step and .done. The space means "descendant of". */
+.step.done .step-num { background: var(--good); color: var(--on-accent); border-color: transparent; }
+
+.instructions { background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 14px; margin: 8px 0; }
+.instructions ol { margin: 4px 0 8px; padding-left: 20px; }
+
+/* File drop target. The dashed border is the universal "drop here" signal;
+   .over is added by React while a file is dragged over it. */
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.dropzone:hover { border-color: var(--accent-deep); }
+.dropzone.over { border-color: var(--accent); background: var(--accent-soft); }
+
+.preview { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-top: 10px; }
+.warn { color: var(--warn-text); background: var(--warn-bg); padding: 6px 10px; border-radius: 6px; margin: 6px 0; font-size: 13px; }
+
+
+/* --- KPI tiles: the headline numbers --- */
+/* repeat(auto-fit, minmax(180px, 1fr)) is responsive with no media query:
+   fit as many >=180px columns as will fit, then share the leftover space.
+   Four across on a laptop, one on a phone, automatically. */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+/* These tiles are real <button>s, so they get hover and focus feedback. */
+.kpi { transition: border-color 120ms ease, background 120ms ease; }
+.kpi:hover { border-color: var(--accent-deep); background: var(--surface-2); }
+.kpi:focus-visible { outline: none; box-shadow: var(--ring); border-color: var(--accent); }
+
 .kpi .label { display: flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 12px; }
-.kpi .value { font-size: 24px; font-weight: 700; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+.kpi .value {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 4px 0 2px;
+  /* Makes every digit the same width, so numbers don't jiggle as they
+     update. Essential for any dashboard. */
+  font-variant-numeric: tabular-nums;
+}
 .delta { font-size: 12px; font-variant-numeric: tabular-nums; }
 .delta.up { color: var(--good); }
 .delta.down { color: var(--bad); }
 
-/* Chart */
+
+/* --- Chart furniture (the chart itself is drawn by Recharts in React) --- */
 .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); margin-top: 6px; }
+/* A line sample with no height: just a top border. The color is set inline
+   in React so it always matches the series it describes. */
 .legend .swatch { display: inline-block; width: 18px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
 .legend .swatch.dashed { border-top-style: dashed; }
 .legend .swatch.band { height: 10px; border: 0; opacity: 0.25; }
-.tooltip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+
+.tooltip {
+  background: var(--surface-2);
+  border: 1px solid var(--accent-deep);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 12px;
+  /* On black, a shadow alone is invisible — the border above does the lifting
+     and the shadow just softens the edge. */
+  box-shadow: 0 8px 24px rgb(0 0 0 / 55%);
+}
+/* justify-content: space-between pushes the label left and value right. */
 .tooltip .t-row { display: flex; justify-content: space-between; gap: 14px; font-variant-numeric: tabular-nums; }
 
-/* Insights */
+
+/* --- Insights and data tables --- */
 .insight { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
-.insight :is(h1, h2, h3) { font-size: 14px; margin-top: 12px; }
-.insight ul { padding-left: 18px; }
+/* `:is(h1, h2, h3)` matches any of the three — shorthand for three selectors. */
+.insight :is(h1, h2, h3) { font-size: 14px; margin-top: 12px; color: var(--text); }
+.insight ul { padding-left: 18px; color: var(--text-2); }
+
+/* Explicit column widths keep the event rows aligned with each other. */
 .event-row { display: grid; grid-template-columns: 130px 110px 1fr 70px 28px; gap: 6px; margin-bottom: 6px; }
 @media (max-width: 600px) { .event-row { grid-template-columns: 1fr 1fr; } }
+
 table.data { width: 100%; border-collapse: collapse; font-size: 12px; }
-table.data td, table.data th { padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left; }
+/* One rule for both <td> and <th> — comma means "or". */
+table.data td, table.data th { padding: 5px 6px; border-bottom: 1px solid var(--border); text-align: left; }
+table.data th { color: var(--muted); font-weight: 600; }
+/* `tbody tr:last-child td` strips the final divider, which otherwise reads
+   as a stray line under the table. */
+table.data tbody tr:last-child td { border-bottom: 0; }

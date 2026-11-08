@@ -1,3 +1,12 @@
+/**
+ * InsightsPanel.tsx — generated trend reports plus a free-text question box.
+ *
+ * NEW TO REACT? Note how `busy` is a *string* union rather than a boolean:
+ * "report" | "ask" | null. One value tells you both whether something is
+ * loading and which button started it, so the right label changes while every
+ * button disables. Reach for a union whenever two booleans can't both be true.
+ */
+
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { api } from "../api";
@@ -16,6 +25,8 @@ export default function InsightsPanel({ artistId }: { artistId: number }) {
   const [busy, setBusy] = useState<"report" | "ask" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Load past insights once per artist. An empty list on failure is fine
+  // here — this panel is a bonus, not the point of the page.
   useEffect(() => {
     api.insights(artistId).then(setItems).catch(() => setItems([]));
   }, [artistId]);
@@ -25,6 +36,7 @@ export default function InsightsPanel({ artistId }: { artistId: number }) {
     setError(null);
     try {
       const ins = kind === "report" ? await api.report(artistId) : await api.ask(artistId, question!);
+      // New array, newest first — not items.unshift(), which would mutate.
       setItems([ins, ...items]);
       if (kind === "ask") setQ("");
     } catch (e) {
@@ -53,12 +65,15 @@ export default function InsightsPanel({ artistId }: { artistId: number }) {
         <button className="btn secondary" disabled={busy !== null || !q.trim()}>{busy === "ask" ? "Thinking…" : "Ask"}</button>
       </form>
       <div className="row" style={{ marginTop: 6 }}>
+        {/* Reusing the `.pill` class on a <button>: same sky-blue chip look,
+            but focusable and keyboard-operable because the element is right. */}
         {SUGGESTIONS.map((s) => (
           <button key={s} className="pill" style={{ cursor: "pointer" }} onClick={() => run("ask", s)} disabled={busy !== null}>{s}</button>
         ))}
       </div>
       {error && <p className="err small">{error}</p>}
       {items.length === 0 && <p className="muted small" style={{ marginTop: 12 }}>No reports yet. Generate one to get Claude's read on your trends.</p>}
+      {/* Real database ids, so these keys are stable even as the list grows. */}
       {items.map((i) => (
         <div key={i.id} className="insight">
           <div className="muted small">

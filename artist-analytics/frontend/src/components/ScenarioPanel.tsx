@@ -7,6 +7,16 @@ import { EVENT_KINDS, PLATFORM_LABEL } from "../types";
 import { addDays, fmtNum, fmtPct, metricLabel, shortDate, today } from "../format";
 
 /**
+ * ScenarioPanel.tsx — the "what if I release this?" forecaster.
+ *
+ * NEW TO REACT? This is the file to read for editing a *list* in state. The
+ * rule is that you never mutate state, so every edit builds a new array:
+ *   add    -> [...events, newOne]
+ *   edit   -> events.map((e, j) => (j === i ? { ...e, ...patch } : e))
+ *   remove -> events.filter((_, j) => j !== i)
+ * Pushing into `events` instead would change the array in place, React would
+ * see the same array, and nothing on screen would update.
+ *
  * "What if…": describe upcoming circumstances, get baseline vs scenario forecasts,
  * and Claude's read on it. Nothing is saved as a real plan until you click "Save as plan".
  */
@@ -24,6 +34,8 @@ export default function ScenarioPanel({ artistId, platform, metric }: { artistId
     setSaved(true);
   };
 
+  // Replace the item at index `i` with a copy carrying the changed fields,
+  // and leave every other item as the exact same object.
   const update = (i: number, patch: Partial<NewEvent>) => setEvents(events.map((e, j) => (j === i ? { ...e, ...patch } : e)));
 
   const run = async () => {
@@ -48,6 +60,9 @@ export default function ScenarioPanel({ artistId, platform, metric }: { artistId
         Effect sizes come from this artist's own past releases and playlist adds when there's enough history.
       </p>
 
+      {/* These rows have no ids of their own, so the index is the key. It is
+          safe here only because rows are always rendered in order; if they
+          could be sorted, each event would need a generated id. */}
       {events.map((e, i) => (
         <div key={i} className="event-row">
           <input type="date" value={e.day} onChange={(x) => update(i, { day: x.target.value })} aria-label="Date" />
@@ -64,6 +79,7 @@ export default function ScenarioPanel({ artistId, platform, metric }: { artistId
         </div>
       ))}
       <div className="row" style={{ marginTop: 8 }}>
+        {/* Append by spreading the old array into a new one. */}
         <button className="btn secondary" onClick={() => setEvents([...events, { day: addDays(today(), 21), kind: "playlist", platform: null, magnitude: 1, title: "" }])}>+ Add circumstance</button>
         <label className="small row">
           Horizon
@@ -95,7 +111,10 @@ export default function ScenarioPanel({ artistId, platform, metric }: { artistId
                 contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
               />
               <Area dataKey="band" name="80% range" stroke="none" fill={color} fillOpacity={0.15} isAnimationActive={false} />
-              <Line dataKey="baseline" name="Without plans" stroke="var(--muted)" strokeWidth={2} strokeDasharray="4 4" dot={false} isAnimationActive={false} />
+              {/* The comparison line is grey and dashed, the one that matters is
+                solid sky blue. Color is the scarce resource — spend it on the
+                series you want read first. */}
+            <Line dataKey="baseline" name="Without plans" stroke="var(--muted)" strokeWidth={2} strokeDasharray="4 4" dot={false} isAnimationActive={false} />
               <Line dataKey="scenario" name="With plans" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} />
             </ComposedChart>
           </ResponsiveContainer>
