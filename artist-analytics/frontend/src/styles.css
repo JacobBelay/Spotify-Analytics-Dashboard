@@ -90,7 +90,6 @@
   --radius: 14px;
   --radius-sm: 9px;
   --ring: 0 0 0 3px rgb(2 151 222 / 35%);
-  --glow: 0 0 28px rgb(2 151 222 / 30%);
 
   font-family: var(--font-ui);
 }
@@ -391,57 +390,136 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 /* --- Buttons ---
-   `.btn` is the filled electric-blue primary with a glow. `.btn.secondary` is
-   the quiet one. Two classes on one element both apply; the more specific
-   `.btn.secondary` wins where they disagree. */
+   Four roles, and picking the right one is most of the look:
+
+     .btn          light pill, dark text   — the one real action in a view
+     .btn.secondary  ghost text            — navigation and dismissals
+     .btn.outline  hairline pill           — a second action beside a .btn
+     .btn-orb      glowing disc            — the single hero CTA
+
+   Note what is NOT here: a big glowing blue button. Electric blue carries
+   the aurora, the dots and the data. If the buttons glowed too, the one
+   thing that should pull your eye — the orb — would stop winning. */
 .btn {
-  background: var(--accent);
-  color: var(--on-accent);
-  border: 0;
-  border-radius: 99px;        /* fully rounded: any value past half the height */
-  padding: 9px 18px;
-  cursor: pointer;
+  background: var(--text);
+  color: var(--midnight);
+  border: 1px solid transparent;
+  border-radius: 99px;        /* any value past half the height = a pill */
+  padding: 7px 16px;
+  font-size: 13px;
   font-weight: 650;
-  box-shadow: var(--glow);
-  /* Animate only the properties that change — never `transition: all`. */
-  transition: background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+  cursor: pointer;
+  /* Animate only what changes — never `transition: all`. */
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease, opacity 140ms ease;
 }
-.btn:hover { background: var(--accent-strong); box-shadow: 0 0 36px rgb(2 151 222 / 45%); }
+.btn:hover { background: #ffffff; }
 .btn:active { transform: translateY(1px); }
 
-/* `:focus-visible` is the keyboard-only focus ring — it shows on Tab but not
-   on a mouse click. Restyle it, never remove it. */
-.btn:focus-visible, a:focus-visible, .pill:focus-visible { outline: none; box-shadow: var(--ring); }
-
+/* Ghost: no box at all until you hover it. */
 .btn.secondary {
-  background: rgb(15 24 34 / 80%);
-  color: var(--text);
-  border: 1px solid var(--border);
-  box-shadow: none;
+  background: transparent;
+  color: var(--text-2);
+  border-color: transparent;
+  font-weight: 600;
 }
-.btn.secondary:hover { border-color: var(--accent-deep); color: var(--accent-strong); background: var(--surface-2); }
+.btn.secondary:hover { background: rgb(234 242 249 / 8%); color: var(--text); }
 
-/* `:disabled` is a state selector — the browser knows, no extra class needed. */
-.btn:disabled { opacity: 0.45; cursor: default; background: var(--surface-2); color: var(--muted); box-shadow: none; }
+/* Outline: a hairline pill, for a second action next to a filled one. */
+.btn.outline {
+  background: rgb(15 24 34 / 60%);
+  color: var(--text);
+  border-color: var(--border);
+  font-weight: 600;
+}
+.btn.outline:hover { border-color: var(--accent-deep); color: var(--accent-strong); }
 
-/* The circular CTA from the reference: a ringed, glowing disc. */
-.btn-orb {
-  width: 108px; height: 108px;
+/* `:focus-visible` is the keyboard-only ring — it shows on Tab but not on a
+   mouse click. Restyle it, never remove it. */
+.btn:focus-visible, .btn-orb:focus-visible, .btn-icon:focus-visible, a:focus-visible, .pill:focus-visible, .segmented button:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+/* `:disabled` is a state selector — the browser knows, no extra class. */
+.btn:disabled { opacity: 0.4; cursor: default; }
+
+/* A round icon button: the circled arrows in the reference. Sized in one
+   place so every icon button matches. */
+.btn-icon {
+  width: 34px; height: 34px;
   border-radius: 50%;
-  display: grid; place-items: center;   /* shortest reliable way to centre */
-  gap: 2px;
-  background: radial-gradient(circle at 50% 35%, rgb(2 151 222 / 22%), rgb(8 14 22 / 90%) 70%);
+  display: grid; place-items: center;   /* shortest reliable centring */
+  flex: none;
+  background: rgb(15 24 34 / 60%);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+}
+.btn-icon:hover { border-color: var(--accent-deep); color: var(--text); background: var(--surface-2); }
+
+/* The hero CTA: a glowing ringed disc. The only place blue is a button.
+   Three shadows stack into the ring: a wide flat spread for the halo ring,
+   a soft outer glow, and an inset glow so the disc lights from within. */
+.btn-orb {
+  width: 116px; height: 116px;
+  border-radius: 50%;
+  /* inline-grid, not grid: a block-level box ignores `text-align: center`
+     on its parent, so a plain `grid` orb sits left inside a centred card. */
+  display: inline-grid; place-items: center;
+  gap: 3px;
+  background: radial-gradient(circle at 50% 32%, rgb(2 151 222 / 26%), rgb(8 14 22 / 92%) 72%);
   border: 1px solid var(--accent-deep);
   color: var(--text);
   cursor: pointer;
-  font-size: 12px;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  box-shadow: 0 0 0 7px rgb(2 151 222 / 7%), 0 0 44px rgb(2 151 222 / 28%), inset 0 0 26px rgb(2 151 222 / 16%);
-  transition: box-shadow 160ms ease, border-color 160ms ease;
+  box-shadow:
+    0 0 0 7px rgb(2 151 222 / 7%),
+    0 0 46px rgb(2 151 222 / 30%),
+    inset 0 0 28px rgb(2 151 222 / 18%);
+  transition: box-shadow 180ms ease, border-color 180ms ease;
 }
-.btn-orb:hover { border-color: var(--accent); box-shadow: 0 0 0 9px rgb(2 151 222 / 10%), 0 0 60px rgb(2 151 222 / 40%), inset 0 0 30px rgb(2 151 222 / 24%); }
+.btn-orb .glyph { font-size: 19px; line-height: 1; color: var(--accent-strong); }
+.btn-orb:hover {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 10px rgb(2 151 222 / 11%),
+    0 0 64px rgb(2 151 222 / 44%),
+    inset 0 0 34px rgb(2 151 222 / 26%);
+}
+.btn-orb:disabled { opacity: 0.5; cursor: default; }
 
+/* --- Segmented control ---
+   One track holding mutually exclusive options, with the chosen one filled.
+   Reads as a single control, unlike four separate buttons. The active state
+   is driven by aria-pressed, so the styling and the accessibility name come
+   from the same attribute and can never disagree. */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 99px;
+  background: rgb(15 24 34 / 70%);
+  border: 1px solid var(--border);
+}
+.segmented button {
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  border-radius: 99px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+.segmented button:hover { color: var(--text); }
+.segmented button[aria-pressed="true"] { background: var(--text); color: var(--midnight); }
 
 /* --- Inputs --- */
 input, select, textarea {

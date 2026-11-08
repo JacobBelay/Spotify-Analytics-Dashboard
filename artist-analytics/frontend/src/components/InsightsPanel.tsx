@@ -62,7 +62,7 @@ export default function InsightsPanel({ artistId }: { artistId: number }) {
         }}
       >
         <input style={{ flex: 1, minWidth: 200 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask about your numbers…" aria-label="Question" />
-        <button className="btn secondary" disabled={busy !== null || !q.trim()}>{busy === "ask" ? "Thinking…" : "Ask"}</button>
+        <button className="btn outline" disabled={busy !== null || !q.trim()}>{busy === "ask" ? "Thinking…" : "Ask"}</button>
       </form>
       <div className="row" style={{ marginTop: 6 }}>
         {/* Reusing the `.pill` class on a <button>: same sky-blue chip look,

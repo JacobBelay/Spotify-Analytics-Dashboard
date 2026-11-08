@@ -137,7 +137,7 @@ export default function App() {
             <strong>The backend isn't running.</strong> You can look around, but nothing can be saved or loaded. To start it, open
             PowerShell in the <code>artist-analytics</code> folder and run <code>docker compose up</code>.
           </span>
-          <button className="btn secondary" onClick={() => window.location.reload()}>Retry</button>
+          <button className="btn outline" onClick={() => window.location.reload()}>Retry</button>
         </div>
       )}
 

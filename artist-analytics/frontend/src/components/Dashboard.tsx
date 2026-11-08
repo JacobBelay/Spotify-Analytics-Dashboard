@@ -131,12 +131,14 @@ export default function Dashboard({ artist, onOpenSources }: { artist: Artist; o
               </option>
             ))}
           </select>
-          <div className="row" role="group" aria-label="Date range">
-            {/* The selected button gets `.btn` (solid sky blue) and the rest
-                get `.btn secondary` (quiet outline) — comparing state to the
-                item is how you style the active one. */}
+          {/* One segmented control rather than four loose buttons: these
+              options are mutually exclusive, so they should look like a
+              single control. `aria-pressed` drives both the filled style in
+              CSS and what a screen reader announces, so the look and the
+              accessibility state can never disagree. */}
+          <div className="segmented" role="group" aria-label="Date range">
             {RANGES.map((r) => (
-              <button key={r.days} className={`btn ${days === r.days ? "" : "secondary"}`} onClick={() => setDays(r.days)}>{r.label}</button>
+              <button key={r.days} aria-pressed={days === r.days} onClick={() => setDays(r.days)}>{r.label}</button>
             ))}
           </div>
         </div>

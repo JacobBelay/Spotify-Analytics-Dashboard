@@ -117,7 +117,7 @@ function StepBody({ step, artistId, onChange }: { step: OnboardingStep; artistId
         {status}
       </div>
       <div className="row" style={{ margin: "8px 0" }}>
-        <a className="btn secondary" href={step.open_url} target="_blank" rel="noreferrer">Open {label} ↗</a>
+        <a className="btn outline" href={step.open_url} target="_blank" rel="noreferrer">Open {label} ↗</a>
         <span className="muted small">Opens in a new tab. Log in there, then follow these steps:</span>
       </div>
       <div className="instructions">

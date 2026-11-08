@@ -75,12 +75,13 @@ export default function ScenarioPanel({ artistId, platform, metric }: { artistId
             <option value={1}>normal</option>
             <option value={2}>big</option>
           </select>
-          <button className="btn secondary" onClick={() => setEvents(events.filter((_, j) => j !== i))} aria-label="Remove">×</button>
+          {/* A round icon button, sized once in CSS so every one matches. */}
+          <button type="button" className="btn-icon" onClick={() => setEvents(events.filter((_, j) => j !== i))} aria-label="Remove">×</button>
         </div>
       ))}
       <div className="row" style={{ marginTop: 8 }}>
         {/* Append by spreading the old array into a new one. */}
-        <button className="btn secondary" onClick={() => setEvents([...events, { day: addDays(today(), 21), kind: "playlist", platform: null, magnitude: 1, title: "" }])}>+ Add circumstance</button>
+        <button type="button" className="btn secondary" onClick={() => setEvents([...events, { day: addDays(today(), 21), kind: "playlist", platform: null, magnitude: 1, title: "" }])}>+ Add circumstance</button>
         <label className="small row">
           Horizon
           <select value={horizon} onChange={(e) => setHorizon(Number(e.target.value))}>
@@ -98,7 +99,7 @@ export default function ScenarioPanel({ artistId, platform, metric }: { artistId
             <span className="muted small">vs {fmtNum(result.baseline_total)} without these plans</span>
             <span className={`delta ${result.lift_pct >= 0 ? "up" : "down"}`}>{fmtPct(result.lift_pct)}</span>
             <span className="pill">method: {result.method}</span>
-            <button className="btn secondary" onClick={savePlan} disabled={saved}>{saved ? "Saved to timeline" : "Save as plan"}</button>
+            <button type="button" className="btn outline" onClick={savePlan} disabled={saved}>{saved ? "Saved to timeline" : "Save as plan"}</button>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <ComposedChart data={result.points.map((p) => ({ ...p, band: [p.low, p.high] }))} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>

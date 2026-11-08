@@ -121,7 +121,7 @@ export default function UploadBox({ artistId, platform, onImported }: { artistId
           {preview.ignored_columns.length > 0 && <p className="muted small">Ignored columns: {preview.ignored_columns.join(", ")}</p>}
           <div className="row" style={{ marginTop: 8 }}>
             <button className="btn" disabled={busy || preview.file_type === "unknown"} onClick={confirm}>Import</button>
-            <button className="btn secondary" onClick={() => { setPreview(null); setFile(null); }}>Cancel</button>
+            <button type="button" className="btn secondary" onClick={() => { setPreview(null); setFile(null); }}>Cancel</button>
           </div>
         </div>
       )}

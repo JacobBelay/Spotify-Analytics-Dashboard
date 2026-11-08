@@ -114,8 +114,12 @@ Each file's header comment teaches the idea it best demonstrates:
 | --- | --- |
 | `.card` | translucent panel, hairline border, lit top edge |
 | `.eyebrow` | the dotted micro-label. Add `.ember` for an orange dot |
-| `.btn` / `.btn.secondary` | glowing blue pill / quiet outline |
-| `.btn-orb` | the circular ringed CTA |
+| `.btn` | light pill, dark text — the one real action in a view |
+| `.btn.secondary` | ghost text — navigation and dismissals |
+| `.btn.outline` | hairline pill — a second action beside a `.btn` |
+| `.btn-icon` | round 34px icon button |
+| `.btn-orb` | glowing disc — the single hero CTA |
+| `.segmented` | one track of mutually exclusive options |
 | `.wordmark` | the corner logotype with its glowing dot |
 | `.hero` / `.hero-row` / `.rail` / `.stat` | the landing headline block and its stat rails |
 | `.page-head` + `.title` | a screen's own serif headline, smaller than the hero |
@@ -123,6 +127,28 @@ Each file's header comment teaches the idea it best demonstrates:
 | `.loading` | the pulsing dot, in place of the word "Loading…" |
 | `.empty` | centred empty state with one serif line |
 | `.display` + `<em>` | serif headline treatment anywhere, with one italic word |
+
+## Choosing a button
+
+There is deliberately **no big glowing blue button**. Electric blue carries
+the aurora, the status dots and the data; if the buttons glowed too, the orb
+would stop being the thing your eye goes to.
+
+| Situation | Use |
+| --- | --- |
+| The one real action in a view (Import, New trend report, + Add artist) | `.btn` |
+| Navigation, dismissals, "Cancel", "Skip" | `.btn.secondary` |
+| A second action next to a `.btn` (Ask, Save as plan, Open portal ↗) | `.btn.outline` |
+| A bare glyph, like remove or step controls | `.btn-icon` |
+| The single hero call to action on a screen | `.btn-orb` |
+| Mutually exclusive options, like a date range | `.segmented` |
+
+At most one `.btn` and at most one `.btn-orb` per view. If a screen seems to
+need two of either, one of them is really a `.btn.outline`.
+
+The segmented control's active option is driven by `aria-pressed`, so the
+filled style and what a screen reader announces come from the same attribute
+and cannot disagree.
 
 ## Applying the style to a new screen
 

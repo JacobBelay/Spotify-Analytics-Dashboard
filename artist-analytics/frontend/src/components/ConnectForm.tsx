@@ -115,10 +115,15 @@ export default function ConnectForm({ onCreated }: { onCreated: (a: Artist) => v
         <div key={p} className="warn">{p}</div>
       ))}
 
-        <div className="row" style={{ marginTop: 16 }}>
-          {/* `disabled` drives the dimmed `.btn:disabled` style in CSS — one
-              state value changes both behaviour and appearance. */}
-          <button className="btn" disabled={busy}>{busy ? "Looking you up…" : "Continue"}</button>
+        {/* The one hero CTA on the page, as a glowing disc. Everything else
+            in the app is a light pill or a ghost button, so this reads as
+            the single thing to do here. `disabled` drives the dimmed state
+            in CSS — one value changes behaviour and appearance together. */}
+        <div className="row" style={{ marginTop: 22, justifyContent: "center" }}>
+          <button className="btn-orb" disabled={busy}>
+            <span className="glyph" aria-hidden>↗</span>
+            {busy ? "Looking…" : "Connect"}
+          </button>
         </div>
       </form>
     </div>
