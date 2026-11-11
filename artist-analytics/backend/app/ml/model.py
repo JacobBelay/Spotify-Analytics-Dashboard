@@ -20,21 +20,21 @@ from .features import H, K, L, S
 class ScenarioForecaster(nn.Module):
     def __init__(self, hidden: int = 64):
         super().__init__()
-        self.encoder = nn.GRU(input_size=1 + K, hidden_size=hidden, num_layers=2, batch_first=True, dropout=0.1)
+        self.encoder = nn.GRU(input_size=1 + K, hidden_size=hidden, num_layers=2, batch_first=True, dropout=0.1) # Vector to be created here
         self.future_proj = nn.Sequential(nn.Flatten(), nn.Linear(H * (K + 7), 128), nn.GELU())
         self.head = nn.Sequential(
             nn.Linear(hidden + 128 + S, 256),
             nn.GELU(),
             nn.Dropout(0.1),
-            nn.Linear(256, 2 * H),
+            nn.Linear(256, 2 * H), 
         )
 
     def forward(self, past: torch.Tensor, future: torch.Tensor, static: torch.Tensor):
-        _, h = self.encoder(past)                  # h: [layers, B, hidden]
+        _, h = self.encoder(past)    # Vector  here         # h: [layers, B, hidden]
         z = torch.cat([h[-1], self.future_proj(future), static], dim=-1)
         out = self.head(z)
-        mean, log_var = out[:, :H], out[:, H:].clamp(-8, 4)
-        return mean, log_var
+        mean, log_var = out[:, :H], out[:, H:].clamp(-8, 4) # log variance and mean
+        return mean, log_var # mean and log variance returned here
 
 
 def masked_gaussian_nll(mean, log_var, target, mask):
